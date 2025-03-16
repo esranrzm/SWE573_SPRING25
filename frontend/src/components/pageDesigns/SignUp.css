@@ -1,0 +1,113 @@
+/* signup.css */
+.signup-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20vh;
+    margin-top: 20px;
+    background-color: #f3f4f600;
+  }
+
+  .top-box-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: bold;
+    font-size: x-large;
+    margin-top: 0.1rem;
+  }
+
+  .text-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40%; /* Adjust width as needed */
+  }
+  
+  .top-box {
+    font-size: medium;
+    text-align: center;
+    padding: 5px;
+    width: 100%; /* Make it take full width of text-container */
+  }
+  
+  .signup-box {
+    background-color: rgb(203, 202, 202);
+    padding: 1.2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 450px;
+  }
+  
+  .signup-title {
+    font-size: 1.75rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 10px;
+    margin-top: 3px;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+
+  .password-field {
+    width: 100%;
+    padding: 10px;
+    margin-top: 3px;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    border: 1px solid #ccc;
+    background-color: #ccc;
+    border-radius: 5px;
+  }
+  
+  .signup-button {
+    width: 100%;
+    background-color: black;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  
+  .signup-button:hover {
+    background-color: #333;
+  }
+  
+  .signup-text {
+    margin-top: 20px;
+    color: #555;
+    text-align: center;
+  }
+  
+  .signup-text a {
+    color: #007bff;
+    text-decoration: none;
+  }
+
+  .password-container {
+    width: 120%;
+  }
+  
+  .password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  
+  .password-toggle {
+    position: absolute;
+    right: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    padding: 5px;
+  }
+  
