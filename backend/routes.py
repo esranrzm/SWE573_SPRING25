@@ -7,14 +7,14 @@ from flask_session import Session
 bcrypt = Bcrypt(app)
 server_session = Session(app)
 
-#Get all users
+# Get all users
 @app.route("/api/users", methods=["GET"])
 def get_users():
     users = User.query.all()
     result = [user.to_json() for user in users]
     return jsonify(result)
 
-
+# get current user
 @app.route("/api/users/@me", methods=["GET"])
 def get_current_user():
     user_id = session.get("user_id")
@@ -25,9 +25,16 @@ def get_current_user():
         }), 401
     
     user = User.query.filter_by(id=user_id).first()
+
     return jsonify({
         "id": user.id,
-        "username": user.username
+        "name": user.name,
+        "surname": user.surname,
+        "username": user.username,
+        "email": user.email,
+        "occupation": user.occupation,
+        "img_url": user.image_url,
+        "hashedPassword": user.password
     })
 
 #register a user
@@ -60,7 +67,7 @@ def register_user():
         elif gender == "female":
             img_url = f"https://avatar.iran.liara.run/public/girl?username={name}"
         else:
-            img_url = None
+            img_url = f"https://avatar.iran.liara.run/public/girl?username={name}"
 
         hashed_password = bcrypt.generate_password_hash(password)
 
@@ -91,6 +98,7 @@ def register_user():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
+#login
 @app.route("/api/users/login", methods=["POST"])
 def login_user():
     username = request.json["username"]
@@ -118,10 +126,14 @@ def login_user():
             }
         ),201
 
+#logout
 @app.route("/api/users/logout", methods=["POST"])
 def logout():
-    session.pop("user_id")
-    return "200"
+    if "user_id" in session:
+        session.pop("user_id")
+        return jsonify({"msg": "Logout successful."}), 200
+    else:
+        return jsonify({"msg": "No user logged in."}), 200
 
 #delete user
 @app.route("/api/users/<string:id>", methods=["DELETE"])
@@ -139,8 +151,7 @@ def delete_user(id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-
-#delete user
+#update user
 @app.route("/api/users/<string:id>", methods=["PUT"])
 def update_user(id):
     try:
@@ -150,6 +161,13 @@ def update_user(id):
         
         data = request.json
 
+       
+        new_username = data.get("username")
+        if new_username and new_username != user.username: #user entered different username than the current
+            existing_user = User.query.filter(User.id != id).first()   
+            if existing_user: # there is another user with the same username exist
+                return jsonify({"error": "Username already taken"}), 400
+        
         user.name = data.get("name", user.name)
         user.surname = data.get("surname", user.surname)
         user.username = data.get("username", user.username)
@@ -164,6 +182,44 @@ def update_user(id):
         
         db.session.commit()
         return jsonify({"msg":"User updated successfully"}),200
+        
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+
+@app.route("/api/users/updatePass/<string:id>", methods=["PUT"])
+def update_user_password(id): 
+    try:
+        user = User.query.get(id)
+        if user is None:
+            return jsonify({"error": "User not found"}), 404
+        
+
+        data = request.json
+        print(data.get("oldPassword"))
+        if not bcrypt.check_password_hash(user.password, data.get("oldPassword")):
+            return jsonify({
+                "error": "Unauthorized, Password is incorrect!"
+            }), 401
+        
+
+        user.name = user.name
+        user.surname = user.surname
+        user.username = user.username
+        user.email = user.email
+        user.occupation = user.occupation
+        user.image_url = user.image_url
+
+        # Handle password change securely (hash the new password)
+        new_password = data.get("newPassword")
+        if new_password:
+            user.password = bcrypt.generate_password_hash(new_password)
+        
+        db.session.commit()
+        return jsonify({"msg":"User password changed successfully"}),200
+        
     
     except Exception as e:
         db.session.rollback()
