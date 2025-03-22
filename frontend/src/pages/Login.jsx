@@ -23,7 +23,7 @@ const Login = () => {
         }
         catch (e) {
             console.log(e)
-            if (error.response.status === 401) {
+            if (e.response.status === 401) {
                 alert("Invalid credentials")
             }
         }
