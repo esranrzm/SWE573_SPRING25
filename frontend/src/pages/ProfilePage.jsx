@@ -1,20 +1,22 @@
 import "../components/pageDesigns/ProfilePage.css";
-import { Box, Button, Container, Flex, Text, Stack, For, Card, Image, Portal, Input, Field, Dialog, CloseButton} from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Text, Stack, For, Card, Image, Portal, Input, Field, Dialog, CloseButton, DataList, Tabs, Link, InputGroup, Span, Textarea} from "@chakra-ui/react";
 import { useColorModeValue } from "../components/ui/color-mode";
 import { useRef, useState, useEffect } from "react"
 import httpClient from "@/httpClient";
 
 const ProfilePage = () => {
     //const ref = useRef<HTMLInputElement>(null)
-    const [username, setUsername] = useState("");
-    const [name, setName] = useState("");
-    const [surname, setSurname] = useState("");
-    const [email, setEmail] = useState("");
-    const [occupation, setOccupation] = useState("");
-    const [oldPassword, setOldPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [image, setImage] = useState("");
+    const [username, setUsername] = useState("testUsername");
+    const [name, setName] = useState("testName");
+    const [surname, setSurname] = useState("testSurname");
+    const [email, setEmail] = useState("testEmail.gmail.com");
+    const [occupation, setOccupation] = useState("test test");
+    const [oldPassword, setOldPassword] = useState("test123");
+    const [newPassword, setNewPassword] = useState("test123");
+    const [image, setImage] = useState("https://avatar.iran.liara.run/public/girl?username=esra%20nur");
     const [userId, setUserId] = useState("");
+    const [dummyBio, setBio] = useState("Passionate software engineer with expertise in Android development. Always eager to learn, solve problems, and build efficient solutions. Lover of tech, games, and innovation. 🚀");
+
     const [isOpen, setIsOpen] = useState(false);
     const usernameRef = useRef(null); // Create a ref for the input
 
@@ -29,7 +31,6 @@ const ProfilePage = () => {
           setOccupation(resp.data.occupation)
           setImage(resp.data.img_url)
           setUserId(resp.data.id)
-          setHashedPassword(resp.data.hashedPassword)
           console.log(image)
       
           if (resp.status != 200) {
@@ -52,6 +53,14 @@ const ProfilePage = () => {
     
       }, []);
 
+    const currentUser = [
+    { label: "Name", value: name },
+    { label: "SurName", value: surname },
+    { label: "username", value: username },
+    { label: "Email", value: email },
+    { label: "Occupation", value: occupation },
+    ]
+
     const topics = [
         { title: "The usage of multi-agent LLMs in Code Generation", author: "esranzm", date: "2025-03-18 16:43:54" },
         { title: "Which AI tool is best for unit test creation?", author: "esranzm", date: "2025-03-18 16:45:12" },
@@ -70,6 +79,12 @@ const ProfilePage = () => {
         { title: "How to Build Scalable Web Applications with Kotlin and Spring Boot", author: "esranzm", date: "2025-03-19 11:05:25" },
         { title: "Understanding the Basics of Kotlin Coroutines", author: "esranzm", date: "2025-03-19 11:20:42" }
         ];
+
+    const updateBioValues = async () => {
+        
+        console.log(dummyBio)
+
+    };
 
     
     const updateValues = async () => {
@@ -188,129 +203,219 @@ const ProfilePage = () => {
     return (
         <Container>
             <Stack direction="row" spacing={4}>
-                <Box flex="1" alignItems="center"  display="flex" flexDirection="column">
-                    <Text fontSize="lg" fontWeight="bold" mb={2}>Your Profile Information</Text>
-                    
-                    <Box pt="4" pl="4" pr="4" pb="4" borderRadius={8} bg={useColorModeValue("gray.100", "gray.500")} borderColor={useColorModeValue("gray.800", "gray.300")} border="1px solid" width="25%" maxWidth="1200px" display="flex" flexDirection="column"  maxHeight="900px">
-                        <Stack gap="1" direction="column">
-                            <Stack alignItems="center">
+                <Tabs.Root defaultValue="profile">
+                    <Tabs.List>
+                        <Tabs.Trigger value="profile" asChild>
+                            <Link unstyled href="#profile" fontSize="lg" fontWeight="bold" sx={{ pointerEvents: "none", cursor: "default" }}>
+                                Your Profile Information
+                            </Link>
+                        </Tabs.Trigger>
+                        <Tabs.Trigger value="Bio" asChild>
+                            <Link unstyled href="#Bio" fontSize="lg" fontWeight="bold" sx={{ pointerEvents: "none", cursor: "default" }}>
+                                About {username}
+                            </Link>
+                        </Tabs.Trigger>
+                        
+                    </Tabs.List>
+                    <Tabs.Content value="profile">
+                        <Box  display="flex" flexDirection="column" width="400px">
+                            <Box pt="4" pl="4" pr="4" pb="4"
+                            alignItems="center"
+                                borderRadius={8} bg={useColorModeValue("gray.100", "gray.500")} 
+                                borderColor={useColorModeValue("gray.800", "gray.300")} 
+                                border="1px solid"
+                                display="flex" flexDirection="column"  >
+                                <Stack gap="1" direction="column">
+                                    <Stack alignItems="center">
+                                        <Image
+                                            src={image}
+                                            boxSize="150px"
+                                            borderRadius="full"
+                                            fit="cover"
+                                        />
+                                    </Stack>
+                                    
+                                    <DataList.Root orientation="horizontal" divideY="1px" maxW="sm">
+                                        {currentUser.map((info) => (
+                                            <DataList.Item key={info.label} pt="2">
+                                                <DataList.ItemLabel>{info.label}</DataList.ItemLabel>
+                                                <DataList.ItemValue>{info.value}</DataList.ItemValue>
+                                            </DataList.Item>
+                                        ))}
+                                        </DataList.Root>
+                                    <Stack gap="6" direction="row" justifyContent="space-evenly" pt="5">
+                                        <Stack gap="2" direction="row">
+                                            <Dialog.Root role="alertdialog" placement="center">
+                                                <Dialog.Trigger asChild>
+                                                    <Button bg="red.500" color="white" _hover={{bg: "red.600"}} variant="outline">
+                                                        Delete Profile
+                                                    </Button>
+                                                </Dialog.Trigger>
+                                                <Portal>
+                                                    <Dialog.Backdrop />
+                                                    <Dialog.Positioner>
+                                                        <Dialog.Content>
+                                                            <Dialog.Header>
+                                                                <Dialog.Title>Delete Account?</Dialog.Title>
+                                                            </Dialog.Header>
+                                                            <Dialog.Body>
+                                                                <p>
+                                                                    Are you sure you want to delete your account? This action cannot be undone. This will permanently delete your
+                                                                    account and remove your data from our systems.
+                                                                </p>
+                                                            </Dialog.Body>
+                                                            <Dialog.Footer>
+                                                                <Dialog.ActionTrigger asChild>
+                                                                    <Button variant="outline">Cancel</Button>
+                                                                </Dialog.ActionTrigger>
+                                                                <Button colorPalette="red" onClick={() => Logout()}>Delete</Button>
+                                                            </Dialog.Footer>
+                                                            <Dialog.CloseTrigger asChild>
+                                                                <CloseButton size="sm" />
+                                                            </Dialog.CloseTrigger>
+                                                        </Dialog.Content>
+                                                    </Dialog.Positioner>
+                                                </Portal>
+                                            </Dialog.Root>
+                                        </Stack>
+                                        <Stack gap="2" direction="row">
+                                            <Dialog.Root initialFocusEl={() => usernameRef.current}>
+                                                <Dialog.Trigger asChild>
+                                                    <Button bg="blue.500" color="white" _hover={{ bg: "blue.600" }} onClick={() => setIsOpen(true)} variant="solid">Update Profile</Button>
+                                                </Dialog.Trigger>
+                                                <Portal>
+                                                    <Dialog.Backdrop />
+                                                    <Dialog.Positioner>
+                                                        <Dialog.Content>
+                                                            <Dialog.Header>
+                                                                <Dialog.Title>Update profile Information</Dialog.Title>
+                                                            </Dialog.Header>
+                                                            <Dialog.Body pb="4">
+                                                                <Stack gap="4">
+                                                                    <Field.Root>
+                                                                        <Field.Label>Username</Field.Label>
+                                                                        <Input ref={usernameRef} value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username"/>
+                                                                    </Field.Root>
+                                                                    <Field.Root>
+                                                                        <Field.Label>Name</Field.Label>
+                                                                        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="name"/>
+                                                                    </Field.Root>
+                                                                    <Field.Root>
+                                                                        <Field.Label>Surname</Field.Label>
+                                                                        <Input value={surname} onChange={(e) => setSurname(e.target.value)} placeholder="surname"/>
+                                                                    </Field.Root>
+                                                                    <Field.Root>
+                                                                        <Field.Label>Email</Field.Label>
+                                                                        <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email"/>
+                                                                    </Field.Root>
+                                                                    <Field.Root>
+                                                                        <Field.Label>Occupation</Field.Label>
+                                                                        <Input value={occupation} onChange={(e) => setOccupation(e.target.value)} placeholder="occupation"/>
+                                                                    </Field.Root>
+                                                                </Stack>
+                                                            </Dialog.Body>
+                                                            <Dialog.Footer>
+                                                                <Dialog.ActionTrigger asChild>
+                                                                    <Button variant="outline" >Cancel</Button>
+                                                                </Dialog.ActionTrigger>
+                                                                <Dialog.ActionTrigger asChild>
+                                                                    <Button bg="blue.500" color="white" _hover={{ bg: "blue.600" }} onClick={() => updateValues()}>Save</Button>
+                                                                </Dialog.ActionTrigger>
+                                                            </Dialog.Footer>
+                                                        </Dialog.Content>
+                                                    </Dialog.Positioner>
+                                                </Portal>
+                                            </Dialog.Root> 
+                                        </Stack>
+                                    </Stack>
+                                    <Stack alignItems="center" pt={2}>
+                                        <Dialog.Root initialFocusEl={() => usernameRef.current}>
+                                            <Dialog.Trigger asChild>
+                                                <Button onClick={() => setIsOpen(true)} variant="solid">Change Password</Button>
+                                            </Dialog.Trigger>
+                                            <Portal>
+                                                <Dialog.Backdrop />
+                                                <Dialog.Positioner>
+                                                    <Dialog.Content>
+                                                        <Dialog.Header>
+                                                            <Dialog.Title>Update Password</Dialog.Title>
+                                                        </Dialog.Header>
+                                                        <Dialog.Body pb="4">
+                                                            <Stack gap="4">
+                                                                <Field.Root>
+                                                                    <Field.Label>Old Password</Field.Label>
+                                                                    <Input value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} placeholder="Enter your current password"/>
+                                                                </Field.Root>
+                                                                <Field.Root>
+                                                                    <Field.Label>New Password</Field.Label>
+                                                                    <Input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password"/>
+                                                                </Field.Root>
+                                                            </Stack>
+                                                        </Dialog.Body>
+                                                        <Dialog.Footer>
+                                                            <Dialog.ActionTrigger asChild>
+                                                                <Button variant="outline" >Cancel</Button>
+                                                            </Dialog.ActionTrigger>
+                                                            <Dialog.ActionTrigger asChild>
+                                                                <Button onClick={() => updatePassword()}>Save</Button>
+                                                            </Dialog.ActionTrigger>
+                                                        </Dialog.Footer>
+                                                    </Dialog.Content>
+                                                </Dialog.Positioner>
+                                            </Portal>
+                                        </Dialog.Root>
+                                    </Stack>
+                                </Stack>
+                            </Box>
+                        </Box>
+                    </Tabs.Content>
+                    <Tabs.Content value="Bio">
+                        <Box  display="flex" flexDirection="column" width="500px">
+                            <Box pt="4" pl="4" pr="4" pb="4"
+                                alignItems="center"
+                                borderRadius={8} bg={useColorModeValue("gray.100", "gray.500")} 
+                                borderColor={useColorModeValue("gray.800", "gray.300")} 
+                                border="1px solid"
+                                display="flex" flexDirection="column"  >
+                                <Stack gap="4" alignItems="center">
                                 <Image
-                                    src={image}
-                                    boxSize="150px"
-                                    borderRadius="full"
-                                    fit="cover"
-                                />
-                                <Stack gap="2" direction="row">
-                                    <Text fontSize="sm" fontWeight="bold" mb={2}>Username:</Text>
-                                    <Text fontSize="sm" mb={2}>{username}</Text>
-                                </Stack>
-                            </Stack>
-                            
-                            <Stack gap="6" direction="row" pl="8">
-                                <Stack gap="2" direction="row">
-                                    <Text fontSize="sm" fontWeight="bold" mb={2} >Name:</Text>
-                                    <Text fontSize="sm" mb={2} style={{
-                                                                        whiteSpace: 'nowrap', 
-                                                                        overflow: 'hidden', 
-                                                                        textOverflow: 'ellipsis',
-                                                                        maxWidth: '70px'
-                                                                    }}>{name}
-                                    </Text>
-                                </Stack>
-                                <Stack gap="2" direction="row">
-                                    <Text fontSize="sm" fontWeight="bold" mb={2}>Surname:</Text>
-                                    <Text fontSize="sm" mb={2} style={{
-                                                                        whiteSpace: 'nowrap', 
-                                                                        overflow: 'hidden', 
-                                                                        textOverflow: 'ellipsis',
-                                                                        maxWidth: '80px'
-                                                                    }}>{surname}
-                                        </Text>
-                                </Stack>
-                            </Stack>
-                            <Stack gap="2" direction="row" pl="20">
-                                <Text fontSize="sm" fontWeight="bold" mb={2}>Email:</Text>
-                                <Text fontSize="sm" mb={2}>{email}</Text>
-                            </Stack>
-                            <Stack gap="2" direction="row" pl="10">
-                                <Text fontSize="sm" fontWeight="bold" mb={2}>Profession/Occupation:</Text>
-                                <Text fontSize="sm" mb={2} style={{
-                                                                        whiteSpace: 'nowrap', 
-                                                                        overflow: 'hidden', 
-                                                                        textOverflow: 'ellipsis',
-                                                                        maxWidth: '80px'
-                                                                    }}>{occupation}
-                                </Text>
-                            </Stack>
-                            <Stack gap="6" direction="row" justifyContent="space-evenly">
-                                <Stack gap="2" direction="row">
-                                    <Dialog.Root role="alertdialog" placement="center">
+                                        src={image}
+                                        boxSize="150px"
+                                        borderRadius="full"
+                                        fit="cover"
+                                    />
+                                    
+                                    <Text>Bio</Text>
+                                    <Box p="4" borderWidth="3px" borderColor="border.disabled" color="fg.disabled" borderRadius={8} >
+                                        <Text placeholder="To write your bio, click on update button">{dummyBio}</Text>
+                                    </Box>
+                                    <Dialog.Root>
                                         <Dialog.Trigger asChild>
-                                            <Button bg="red.500" color="white" _hover={{bg: "red.600"}} variant="outline" size="sm">
-                                                Delete Profile
-                                            </Button>
+                                            <Button bg="blue.500" color="white" _hover={{ bg: "blue.600" }} onClick={() => setIsOpen(true)} variant="solid">Update</Button>
                                         </Dialog.Trigger>
                                         <Portal>
                                             <Dialog.Backdrop />
                                             <Dialog.Positioner>
                                                 <Dialog.Content>
                                                     <Dialog.Header>
-                                                        <Dialog.Title>Delete Account?</Dialog.Title>
-                                                    </Dialog.Header>
-                                                    <Dialog.Body>
-                                                        <p>
-                                                            Are you sure you want to delete your account? This action cannot be undone. This will permanently delete your
-                                                            account and remove your data from our systems.
-                                                        </p>
-                                                    </Dialog.Body>
-                                                    <Dialog.Footer>
-                                                        <Dialog.ActionTrigger asChild>
-                                                            <Button variant="outline">Cancel</Button>
-                                                        </Dialog.ActionTrigger>
-                                                        <Button colorPalette="red" onClick={() => Logout()}>Delete</Button>
-                                                    </Dialog.Footer>
-                                                    <Dialog.CloseTrigger asChild>
-                                                        <CloseButton size="sm" />
-                                                    </Dialog.CloseTrigger>
-                                                </Dialog.Content>
-                                            </Dialog.Positioner>
-                                        </Portal>
-                                    </Dialog.Root>
-                                </Stack>
-                                <Stack gap="2" direction="row">
-                                    <Dialog.Root initialFocusEl={() => usernameRef.current}>
-                                        <Dialog.Trigger asChild>
-                                            <Button bg="blue.500" color="white" _hover={{ bg: "blue.600" }} onClick={() => setIsOpen(true)} variant="solid">Update Profile</Button>
-                                        </Dialog.Trigger>
-                                        <Portal>
-                                            <Dialog.Backdrop />
-                                            <Dialog.Positioner>
-                                                <Dialog.Content>
-                                                    <Dialog.Header>
-                                                        <Dialog.Title>Update profile Information</Dialog.Title>
+                                                        <Dialog.Title>Update Bio Information</Dialog.Title>
                                                     </Dialog.Header>
                                                     <Dialog.Body pb="4">
                                                         <Stack gap="4">
+                                                            
                                                             <Field.Root>
-                                                                <Field.Label>Username</Field.Label>
-                                                                <Input ref={usernameRef} value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username"/>
+                                                                <Field.Label>About you</Field.Label>
+                                                                <InputGroup
+                                                                    endElement={
+                                                                        <Span color="fg.muted" textStyle="xs" position="relative" pt="180px">
+                                                                        {dummyBio.length} / {200}
+                                                                        </Span>
+                                                                    }
+                                                                >
+                                                                    <Textarea value={dummyBio} placeholder="Enter Bio description..." maxLength={200} onChange={(e) => setBio(e.target.value)} height="200px" variant="outline" />
+                                                                </InputGroup>
                                                             </Field.Root>
-                                                            <Field.Root>
-                                                                <Field.Label>Name</Field.Label>
-                                                                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="name"/>
-                                                            </Field.Root>
-                                                            <Field.Root>
-                                                                <Field.Label>Surname</Field.Label>
-                                                                <Input value={surname} onChange={(e) => setSurname(e.target.value)} placeholder="surname"/>
-                                                            </Field.Root>
-                                                            <Field.Root>
-                                                                <Field.Label>Email</Field.Label>
-                                                                <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email"/>
-                                                            </Field.Root>
-                                                            <Field.Root>
-                                                                <Field.Label>Occupation</Field.Label>
-                                                                <Input value={occupation} onChange={(e) => setOccupation(e.target.value)} placeholder="occupation"/>
-                                                            </Field.Root>
+                                                            
                                                         </Stack>
                                                     </Dialog.Body>
                                                     <Dialog.Footer>
@@ -318,65 +423,36 @@ const ProfilePage = () => {
                                                             <Button variant="outline" >Cancel</Button>
                                                         </Dialog.ActionTrigger>
                                                         <Dialog.ActionTrigger asChild>
-                                                            <Button bg="blue.500" color="white" _hover={{ bg: "blue.600" }} onClick={() => updateValues()}>Save</Button>
+                                                            <Button bg="blue.500" color="white" _hover={{ bg: "blue.600" }}  alignContent="center" onClick={() => updateBioValues()}>Save</Button>
                                                         </Dialog.ActionTrigger>
                                                     </Dialog.Footer>
                                                 </Dialog.Content>
                                             </Dialog.Positioner>
                                         </Portal>
-                                    </Dialog.Root> 
+                                    </Dialog.Root>  
                                 </Stack>
-                            </Stack>
-                            <Stack alignItems="center" pt={2}>
-                                <Dialog.Root initialFocusEl={() => usernameRef.current}>
-                                    <Dialog.Trigger asChild>
-                                        <Button onClick={() => setIsOpen(true)} variant="solid">Change Password</Button>
-                                    </Dialog.Trigger>
-                                    <Portal>
-                                        <Dialog.Backdrop />
-                                        <Dialog.Positioner>
-                                            <Dialog.Content>
-                                                <Dialog.Header>
-                                                    <Dialog.Title>Update Password</Dialog.Title>
-                                                </Dialog.Header>
-                                                <Dialog.Body pb="4">
-                                                    <Stack gap="4">
-                                                        <Field.Root>
-                                                            <Field.Label>Old Password</Field.Label>
-                                                            <Input value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} placeholder="Enter your current password"/>
-                                                        </Field.Root>
-                                                        <Field.Root>
-                                                            <Field.Label>New Password</Field.Label>
-                                                            <Input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password"/>
-                                                        </Field.Root>
-                                                    </Stack>
-                                                </Dialog.Body>
-                                                <Dialog.Footer>
-                                                    <Dialog.ActionTrigger asChild>
-                                                        <Button variant="outline" >Cancel</Button>
-                                                    </Dialog.ActionTrigger>
-                                                    <Dialog.ActionTrigger asChild>
-                                                        <Button onClick={() => updatePassword()}>Save</Button>
-                                                    </Dialog.ActionTrigger>
-                                                </Dialog.Footer>
-                                            </Dialog.Content>
-                                        </Dialog.Positioner>
-                                    </Portal>
-                                </Dialog.Root>
-                            </Stack>
-                        </Stack>
-                    </Box>
-                </Box>
-            </Stack>
-            <Stack direction="column" spacing={4}>
-                <Flex direction="row" justifyContent="space-between" wrap="wrap" width="100%">
-                    
-                    <Box flex="1" maxWidth="48%" my={4} display="flex" flexDirection="column">
-                        <Text fontSize="lg" fontWeight="bold" mb={2}>Your Research Topics</Text>
-                        
-                        <Box pt="4" pl="4" pr="4" pb="4" borderRadius={8} borderColor={useColorModeValue("gray.800", "gray.300")} border="1px solid" display="flex" flexDirection="column" overflowY="auto" maxHeight="400px">
-                            <Stack gap="3" direction="column" overflowY="auto" pr="4">
-                                <For each={topics}>
+                            </Box>
+                        </Box>
+                    </Tabs.Content>
+                </Tabs.Root>
+                
+                <Tabs.Root defaultValue="Researchs" pl="20">
+                    <Tabs.List>
+                        <Tabs.Trigger value="Researchs" asChild>
+                            <Link unstyled href="#Researchs" fontSize="lg" fontWeight="bold">Your Research Topics</Link>
+                        </Tabs.Trigger>
+                        <Tabs.Trigger value="Contributions" asChild>
+                            <Link unstyled href="#Contributions" fontSize="lg" fontWeight="bold">Your Contributions/Comments</Link>
+                        </Tabs.Trigger>
+                    </Tabs.List>
+
+                    <Tabs.Content value="Researchs">
+                        <Box flex="1"  display="flex" flexDirection="column">
+                            <Box pt="4" pl="4" pr="4" pb="4" borderRadius={8} 
+                                borderColor={useColorModeValue("gray.800", "gray.300")} 
+                                    border="1px solid" display="flex" flexDirection="column" overflowY="auto" maxHeight="500px">
+                                <Stack gap="3" direction="column" overflowY="auto" pr="4">
+                                    <For each={topics}>
                                     {(topic) => (
                                         <Card.Root size="sm" width="100%" key={topic.title} pt="0.5" height="150px" bg={useColorModeValue("gray.300", "gray.500")}>
                                             <Card.Body gap="2" pl="8" pt="5">
@@ -395,17 +471,17 @@ const ProfilePage = () => {
                                             </Card.Body>
                                         </Card.Root>
                                     )}
-                                </For>
-                            </Stack>
+                                    </For>
+                                </Stack>
+                            </Box>
                         </Box>
-                    </Box>
-    
-                    <Box flex="1" maxWidth="48%" my={4} display="flex" flexDirection="column">
-                        <Text fontSize="lg" fontWeight="bold" mb={2}>Your Contributions to the Topics</Text>
-                        
-                        <Box pt="4" pl="4" pr="4" pb="4" borderRadius={8} borderColor={useColorModeValue("gray.800", "gray.300")} border="1px solid" display="flex" flexDirection="column" overflowY="auto" maxHeight="400px">
-                            <Stack gap="3" direction="column" overflowY="auto" pr="4">
-                                <For each={contributions}>
+                    </Tabs.Content>
+
+                    <Tabs.Content value="Contributions">
+                        <Box flex="1" display="flex" flexDirection="column">
+                            <Box pt="4" pl="4" pr="4" pb="4" borderRadius={8} borderColor={useColorModeValue("gray.800", "gray.300")} border="1px solid" display="flex" flexDirection="column" overflowY="auto" maxHeight="500px">
+                                <Stack gap="3" direction="column" overflowY="auto" pr="4">
+                                    <For each={contributions}>
                                     {(contribution) => (
                                         <Card.Root size="sm" width="100%" key={contribution.title} pt="0.5" height="150px" bg={useColorModeValue("gray.300", "gray.500")}>
                                             <Card.Body gap="2" pl="8" pt="5">
@@ -424,12 +500,15 @@ const ProfilePage = () => {
                                             </Card.Body>
                                         </Card.Root>
                                     )}
-                                </For>
-                            </Stack>
+                                    </For>
+                                </Stack>
+                            </Box>
                         </Box>
-                    </Box>
-                </Flex>
+                    </Tabs.Content>
+                </Tabs.Root>
+                
             </Stack>
+            
         </Container>
     );        
 };

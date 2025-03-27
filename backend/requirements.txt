@@ -6,3 +6,4 @@ flask-session
 redis
 flask-cors
 pymysql
+pytest
