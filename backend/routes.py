@@ -32,6 +32,8 @@ def get_current_user():
         "surname": user.surname,
         "username": user.username,
         "email": user.email,
+        "bio": user.bio,
+        "isAdmin": user.is_admin,
         "occupation": user.occupation,
         "img_url": user.image_url,
         "hashedPassword": user.password
@@ -53,6 +55,8 @@ def register_user():
         username = data.get("username")
         email = data.get("email")
         password = data.get("password")
+        bio = data.get("bio")
+        isAdmin = data.get("isAdmin")
         occupation = data.get("occupation")
         gender = data.get("gender")
 
@@ -77,6 +81,8 @@ def register_user():
         username=username,
         email=email,
         password=hashed_password,
+        bio=bio,
+        is_admin=isAdmin,
         occupation=occupation,
         gender=gender,
         image_url=img_url
@@ -172,6 +178,8 @@ def update_user(id):
         user.surname = data.get("surname", user.surname)
         user.username = data.get("username", user.username)
         user.email = data.get("email", user.email)
+        user.bio = data.get("bio", user.bio)
+        user.is_admin = data.get("isAdmin", user.is_admin)
         user.occupation = data.get("occupation", user.occupation)
         user.image_url = data.get("image_url", user.image_url)
 
@@ -209,6 +217,8 @@ def update_user_password(id):
         user.surname = user.surname
         user.username = user.username
         user.email = user.email
+        user.bio = user.bio
+        user.is_admin = user.is_admin
         user.occupation = user.occupation
         user.image_url = user.image_url
 
