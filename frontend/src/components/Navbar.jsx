@@ -7,9 +7,9 @@ const Navbar = () => {
 
 	const location = useLocation();
 	// Check if the current route is one of the routes to hide buttons
-	const hideButtons = ['/login', '/signup', '/'].includes(location.pathname);
+	const hideButtons = ['/login', '/signUp', '/'].includes(location.pathname);
 	const Logout = async () => {
-
+ 
 		try {
 			const resp = await httpClient.post("//localhost:5000/api/users/logout", {});
 			
