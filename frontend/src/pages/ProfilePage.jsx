@@ -49,7 +49,7 @@ const ProfilePage = () => {
 
     useEffect(() => {
         
-        //fetchData();
+        fetchData();
     
       }, []);
 
