@@ -1,6 +1,6 @@
 from app import app, db
 from flask import request, jsonify, session
-from models import User
+from models import User, Research
 from flask_bcrypt import Bcrypt
 from flask_session import Session
 
@@ -56,7 +56,7 @@ def register_user():
         email = data.get("email")
         password = data.get("password")
         bio = data.get("bio")
-        isAdmin = data.get("isAdmin")
+        isAdmin = False
         occupation = data.get("occupation")
         gender = data.get("gender")
 
@@ -170,9 +170,15 @@ def update_user(id):
        
         new_username = data.get("username")
         if new_username and new_username != user.username: #user entered different username than the current
-            existing_user = User.query.filter(User.id != id).first()   
+            existing_user = User.query.filter(id!=id).first()   
             if existing_user: # there is another user with the same username exist
                 return jsonify({"error": "Username already taken"}), 400
+            else:
+                # we will update the username, we need to update the research username as well
+                research = Research.query.filter_by(author_name=user.username).first()
+                # Update the username in the research record
+                if research:
+                    research.author_name = new_username
         
         user.name = data.get("name", user.name)
         user.surname = data.get("surname", user.surname)
