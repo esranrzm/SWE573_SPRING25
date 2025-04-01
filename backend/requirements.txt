@@ -8,3 +8,4 @@ flask-cors
 pymysql
 pytest
 datetime
+requests
