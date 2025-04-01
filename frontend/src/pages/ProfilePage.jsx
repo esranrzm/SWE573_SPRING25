@@ -1,29 +1,52 @@
 import "../components/pageDesigns/ProfilePage.css";
-import { Box, Button, Container, Flex, Text, Stack, For, Card, Image, Portal, Input, Field, Dialog, CloseButton, DataList, Tabs, Link, InputGroup, Span, Textarea} from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Text, Stack, For, Card, Image, Portal, Input, Field, Dialog, CloseButton, DataList, Tabs, Link, InputGroup, Span, Textarea, Group} from "@chakra-ui/react";
 import { useColorModeValue } from "../components/ui/color-mode";
 import { useRef, useState, useEffect } from "react"
+import { useNavigate } from 'react-router-dom';
 import httpClient from "@/httpClient";
 
 const ProfilePage = () => {
+
+    const contributions = [
+        { title: "Tips for Writing Efficient SQL Queries in Kotlin", author: "esranzm", date: "2025-03-19 10:10:34" },
+        { title: "What Makes Kotlin a Great Choice for Android Development?", author: "esranzm", date: "2025-03-19 10:20:51" },
+        { title: "The Role of Machine Learning in Modern Software Engineering", author: "esranzm", date: "2025-03-19 10:35:18" },
+        { title: "Unit Testing Best Practices in Kotlin", author: "esranzm", date: "2025-03-19 10:50:03" },
+        { title: "How to Build Scalable Web Applications with Kotlin and Spring Boot", author: "esranzm", date: "2025-03-19 11:05:25" },
+        { title: "Understanding the Basics of Kotlin Coroutines", author: "esranzm", date: "2025-03-19 11:20:42" }
+        ];
+
     //const ref = useRef<HTMLInputElement>(null)
     const [username, setUsername] = useState("testUsername");
     const [name, setName] = useState("testName");
     const [surname, setSurname] = useState("testSurname");
+    const [searchedTopic, setSearchedTopic] = useState("");
+    const [searchedHotTopic, setSearchedHotTopic] = useState("");
+    const [resultTopicList, setResultTopicList] = useState([]);
+    const [resultHotTopicList, setResultHotTopicList] = useState(contributions);
     const [email, setEmail] = useState("testEmail.gmail.com");
     const [occupation, setOccupation] = useState("test test");
     const [oldPassword, setOldPassword] = useState("test123");
     const [newPassword, setNewPassword] = useState("test123");
     const [image, setImage] = useState("https://avatar.iran.liara.run/public/girl?username=esra%20nur");
     const [userId, setUserId] = useState("");
-    const [dummyBio, setBio] = useState("Passionate software engineer with expertise in Android development. Always eager to learn, solve problems, and build efficient solutions. Lover of tech, games, and innovation. 🚀");
+    const [bio, setBio] = useState("");
+    const navigate = useNavigate();
 
     const [isOpen, setIsOpen] = useState(false);
     const usernameRef = useRef(null); // Create a ref for the input
 
+    const currentUser = [
+        { label: "Name", value: name },
+        { label: "SurName", value: surname },
+        { label: "username", value: username },
+        { label: "Email", value: email },
+        { label: "Occupation", value: occupation },
+        ]
+
     const fetchData = async () => {
         try {
           const resp = await httpClient.get("//localhost:5000/api/users/@me");
-          //console.log(resp.status)
           setUsername(resp.data.username)
           setName(resp.data.name)
           setSurname(resp.data.surname)
@@ -31,6 +54,7 @@ const ProfilePage = () => {
           setOccupation(resp.data.occupation)
           setImage(resp.data.img_url)
           setUserId(resp.data.id)
+          setBio(resp.data.bio ?? "Enter Bio description...")
           console.log(image)
       
           if (resp.status != 200) {
@@ -47,44 +71,94 @@ const ProfilePage = () => {
         }
       };
 
+      const fetchResearchData = async () => {
+        try {
+          console.log(userId);  
+          const resp = await httpClient.get(`//localhost:5000/api/researches/user/${userId}`);
+          
+      
+          if (resp.status != 200) {
+              alert("An error occurred. Please try again.");
+          }
+          else if(resp.status === 200) {
+            setResultTopicList(resp.data)
+          }
+          
+        } catch (e) {
+          console.log(e);
+          if (e.response?.status === 401) {
+            //window.location.href = "/";
+          } else {
+            alert(`No research found for the user ${username}`);
+          }
+        }
+      };
+    
+
     useEffect(() => {
         
         fetchData();
+        if (userId) {
+            fetchResearchData();
+        }
     
-      }, []);
+      }, [userId]);
 
-    const currentUser = [
-    { label: "Name", value: name },
-    { label: "SurName", value: surname },
-    { label: "username", value: username },
-    { label: "Email", value: email },
-    { label: "Occupation", value: occupation },
-    ]
+    
 
-    const topics = [
-        { title: "The usage of multi-agent LLMs in Code Generation", author: "esranzm", date: "2025-03-18 16:43:54" },
-        { title: "Which AI tool is best for unit test creation?", author: "esranzm", date: "2025-03-18 16:45:12" },
-        { title: "Kotlin vs Flutter. Which one to choose?", author: "esranzm", date: "2025-03-18 16:47:30" },
-        { title: "Advanced Kotlin Features You Should Know", author: "esranzm", date: "2025-03-19 09:15:00" },
-        { title: "How to Optimize Your Android Application's Performance", author: "esranzm", date: "2025-03-19 09:30:23" },
-        { title: "Exploring the Future of Artificial Intelligence in Software Development", author: "esranzm", date: "2025-03-19 09:45:45" },
-        { title: "Best Practices for Working with APIs in Mobile Development", author: "esranzm", date: "2025-03-19 10:00:12" }
-    ];
+    const updateBioValues = async () => { 
+        setIsOpen(false);
+        try {
+            const resp = await httpClient.put(`//localhost:5000/api/users/${userId}`, {
+                "bio": bio
+            });
 
-    const contributions = [
-        { title: "Tips for Writing Efficient SQL Queries in Kotlin", author: "esranzm", date: "2025-03-19 10:10:34" },
-        { title: "What Makes Kotlin a Great Choice for Android Development?", author: "esranzm", date: "2025-03-19 10:20:51" },
-        { title: "The Role of Machine Learning in Modern Software Engineering", author: "esranzm", date: "2025-03-19 10:35:18" },
-        { title: "Unit Testing Best Practices in Kotlin", author: "esranzm", date: "2025-03-19 10:50:03" },
-        { title: "How to Build Scalable Web Applications with Kotlin and Spring Boot", author: "esranzm", date: "2025-03-19 11:05:25" },
-        { title: "Understanding the Basics of Kotlin Coroutines", author: "esranzm", date: "2025-03-19 11:20:42" }
-        ];
-
-    const updateBioValues = async () => {
-        
-        console.log(dummyBio)
-
+            if (resp.status === 200) {
+                alert("Bio updated successfully");
+                fetchData();
+            }
+        }
+        catch (e) {
+            console.log(e.response.data)
+            if (e.response.status === 404) {
+                alert("User not found!");
+            }
+            else if (e.response.status === 400) {
+                fetchData();
+                alert("Same username is being used by another user, please try with another username");
+            }
+            else {
+                alert("Something went wrong!");
+            }
+        }
     };
+
+    const searchHotResearchTopic = () => {
+        if (searchedHotTopic === "") 
+        { 
+          setResultHotTopicList(contributions);
+          return;
+        }
+        const filterHotTopicBySearch = contributions.filter((item) => 
+          item.title.toLowerCase().includes(searchedHotTopic.toLowerCase()) || 
+          item.author.toLowerCase().includes(searchedHotTopic.toLowerCase())
+        )
+        setResultHotTopicList(filterHotTopicBySearch);
+      }
+
+    const searchResearchTopic = () => {
+    if (searchedTopic === "") 
+        { 
+        fetchResearchData();
+        setResultTopicList(resultTopicList);
+        return;
+        }
+        const filterBySearch = resultTopicList.filter((item) => 
+        item.title.toLowerCase().includes(searchedTopic.toLowerCase()) || 
+        item.authorName.toLowerCase().includes(searchedTopic.toLowerCase())
+        );
+        setResultTopicList(filterBySearch);
+    }
 
     
     const updateValues = async () => {
@@ -101,6 +175,7 @@ const ProfilePage = () => {
                 if (resp.status === 200) {
                     alert("User updated successfully");
                     fetchData();
+                    searchResearchTopic();
                 }
                 
                 
@@ -198,6 +273,10 @@ const ProfilePage = () => {
             }
         }
 
+    };
+
+    const directToDetails = (topicId) => {
+        navigate(`/researchDetails?param=${topicId}`);
     };
 
     return (
@@ -387,7 +466,7 @@ const ProfilePage = () => {
                                     
                                     <Text>Bio</Text>
                                     <Box p="4" borderWidth="3px" borderColor="border.disabled" color="fg.disabled" borderRadius={8} >
-                                        <Text placeholder="To write your bio, click on update button">{dummyBio}</Text>
+                                        <Text placeholder="To write your bio, click on update button">{bio}</Text>
                                     </Box>
                                     <Dialog.Root>
                                         <Dialog.Trigger asChild>
@@ -408,11 +487,11 @@ const ProfilePage = () => {
                                                                 <InputGroup
                                                                     endElement={
                                                                         <Span color="fg.muted" textStyle="xs" position="relative" pt="180px">
-                                                                        {dummyBio.length} / {200}
+                                                                        {bio.length} / {200}
                                                                         </Span>
                                                                     }
                                                                 >
-                                                                    <Textarea value={dummyBio} placeholder="Enter Bio description..." maxLength={200} onChange={(e) => setBio(e.target.value)} height="200px" variant="outline" />
+                                                                    <Textarea value={bio} placeholder="Enter Bio description..." maxLength={200} onChange={(e) => setBio(e.target.value)} height="200px" variant="outline" />
                                                                 </InputGroup>
                                                             </Field.Root>
                                                             
@@ -452,7 +531,13 @@ const ProfilePage = () => {
                                 borderColor={useColorModeValue("gray.800", "gray.300")} 
                                     border="1px solid" display="flex" flexDirection="column" overflowY="auto" maxHeight="500px">
                                 <Stack gap="3" direction="column" overflowY="auto" pr="4">
-                                    <For each={topics}>
+                                    <Group attached w="full" maxW="2md">
+                                        <Input flex="1" placeholder="Search Research" onChange={(e) => setSearchedTopic(e.target.value)}/>
+                                        <Button bg={useColorModeValue("black.500", "gray.400")} onClick={() => searchResearchTopic()}>
+                                            Search
+                                        </Button>
+                                    </Group>
+                                    <For each={resultTopicList}>
                                     {(topic) => (
                                         <Card.Root size="sm" width="100%" key={topic.title} pt="0.5" height="150px" bg={useColorModeValue("gray.300", "gray.500")}>
                                             <Card.Body gap="2" pl="8" pt="5">
@@ -460,12 +545,18 @@ const ProfilePage = () => {
                                                     <Stack gap="5" direction="column" flex="1">
                                                         <Card.Title mb="-0.5" textStyle="md">{topic.title}</Card.Title>
                                                         <Stack gap="-0.5" direction="column">
-                                                            <Text textStyle="2xs">Author: {topic.author}</Text>
-                                                            <Text textStyle="2xs">Created At: {topic.date}</Text>
+                                                            <Text textStyle="2xs">Author: {topic.authorName}</Text>
+                                                            <Text textStyle="2xs">Created At: {topic.createdAt}</Text>
                                                         </Stack>
                                                     </Stack>
                                                     <Card.Footer>
-                                                        <Button>View</Button>
+                                                        <Button 
+                                                            textStyle="xs" 
+                                                            width="65px" 
+                                                            height="30px" 
+                                                            onClick={() => directToDetails(topic.id)}>
+                                                            View
+                                                        </Button>
                                                     </Card.Footer>
                                                 </Flex>
                                             </Card.Body>
@@ -481,7 +572,13 @@ const ProfilePage = () => {
                         <Box flex="1" display="flex" flexDirection="column">
                             <Box pt="4" pl="4" pr="4" pb="4" borderRadius={8} borderColor={useColorModeValue("gray.800", "gray.300")} border="1px solid" display="flex" flexDirection="column" overflowY="auto" maxHeight="500px">
                                 <Stack gap="3" direction="column" overflowY="auto" pr="4">
-                                    <For each={contributions}>
+                                    <Group attached w="full" maxW="2md">
+                                        <Input flex="1" placeholder="Search your Contributions/comments" onChange={(e) => setSearchedHotTopic(e.target.value)}/>
+                                        <Button bg={useColorModeValue("black.500", "gray.400")} onClick={() => searchHotResearchTopic()}>
+                                            Search
+                                        </Button>
+                                    </Group>
+                                    <For each={resultHotTopicList}>
                                     {(contribution) => (
                                         <Card.Root size="sm" width="100%" key={contribution.title} pt="0.5" height="150px" bg={useColorModeValue("gray.300", "gray.500")}>
                                             <Card.Body gap="2" pl="8" pt="5">

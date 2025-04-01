@@ -1,0 +1,417 @@
+import { Box, Button, Container, Flex, Text, Stack, For, Card, Image, Portal, Input, Field, Dialog, Tabs, Link, InputGroup, IconButton, Textarea, Span, CloseButton} from "@chakra-ui/react";
+import { LuPencilLine, LuTrash  } from "react-icons/lu"
+import { useColorModeValue } from "../components/ui/color-mode";
+import { useRef, useState, useEffect } from "react"
+import { useLocation } from 'react-router-dom';
+import httpClient from "@/httpClient";
+
+const ResearchDetailsPage = () => {
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const researchId = queryParams.get('param');
+    const [authorName, setAuthorName] = useState();
+    const [researchTitle, setResearchTitle] = useState("");
+    const [researchDescription, setResearchDesc] = useState("");
+    const [researchTags, setResearchTags] = useState("");
+    const [createdAt, setResearchDate] = useState("");
+    const [userName, setUserName] = useState("");
+
+
+    const comments = [
+        { 
+        commentText: "Kotlin and Flutter are both popular choices for mobile development, but they serve different purposes. Kotlin is a statically-typed programming language primarily used for Android development, offering seamless integration with Java and providing a modern, concise alternative to Java. It excels in creating native Android apps with full access to platform features. Flutter, on the other hand, is a cross-platform framework that uses the Dart language to create natively compiled apps for both Android and iOS from a single codebase. It excels in building beautiful UIs with a rich set of pre-built widgets and offers high performance. The choice depends on your needs: if you need a native Android app, Kotlin is ideal, but for cross-platform apps, Flutter is the go-to option for faster development and broader reach.", 
+        author: "esranzm",
+        date: "2025-03-18 16:43:54" },
+        { 
+        commentText: "Kotlin and Flutter are both popular choices for mobile development, but they serve different purposes. Kotlin is a statically-typed programming language primarily used for Android development, offering seamless integration with Java and providing a modern, concise alternative to Java. It excels in creating native Android apps with full access to platform features. Flutter, on the other hand, is a cross-platform framework that uses the Dart language to create natively compiled apps for both Android and iOS from a single codebase. It excels in building beautiful UIs with a rich set of pre-built widgets and offers high performance. The choice depends on your needs: if you need a native Android app, Kotlin is ideal, but for cross-platform apps, Flutter is the go-to option for faster development and broader reach.", 
+        author: "alikoc",
+        date: "2025-03-18 16:43:54" },
+        { 
+        commentText: "Kotlin and Flutter are both popular choices for mobile development, but they serve different purposes. Kotlin is a statically-typed programming language primarily used for Android development, offering seamless integration with Java and providing a modern, concise alternative to Java. It excels in creating native Android apps with full access to platform features. Flutter, on the other hand, is a cross-platform framework that uses the Dart language to create natively compiled apps for both Android and iOS from a single codebase. It excels in building beautiful UIs with a rich set of pre-built widgets and offers high performance. The choice depends on your needs: if you need a native Android app, Kotlin is ideal, but for cross-platform apps, Flutter is the go-to option for faster development and broader reach.", 
+        author: "messi123",
+        date: "2025-03-18 16:43:54" },
+        {
+        commentText: "The choice depends on youplatform apps, Flutter reach.", 
+        author: "messi123asa",
+        date: "2025-03-23 16:43:54" }
+    ];
+
+    const fetchUserId = async () => {
+        try {
+            const resp = await httpClient.get("//localhost:5000/api/users/@me");
+            setUserName(resp.data.username)
+        
+            if (resp.status != 200) {
+                alert("An error occurred. Please try again.");
+            }
+            
+        } catch (e) {
+            console.log(e);
+            if (e.response?.status === 401) {
+            window.location.href = "/";
+            } else {
+            alert("An error occurred. Please try again.");
+            }
+        }
+        };
+
+    const fetchResearchData = async () => {
+        try {
+            const resp = await httpClient.get(`//localhost:5000/api/researches/${researchId}`);
+            if (resp.status === 200) {
+                setAuthorName(resp.data.authorName)
+                setResearchTitle(resp.data.title)
+                setResearchDesc(resp.data.description)
+                if (resp.data.tags && resp.data.tags.length > 0) {
+                    const convertedTags = resp.data.tags.split(",").map(tag => tag.trim()).join(" ");
+                    setResearchTags(convertedTags);
+                }
+                setResearchDate(resp.data.createdAt)
+
+            }
+            
+            if (resp.status != 200) {
+                alert("An error occurred. Please try again.");
+            }
+            
+        } catch (e) {
+            console.log(e);
+            if (e.response?.status === 401) {
+            window.location.href = "/";
+            } else {
+            alert("An error occurred. Please try again.");
+            }
+        }
+    };
+
+    const processTags = (input) => {
+        const tags = input.split(",").map(tag => tag.trim());
+        const validTags = tags.filter(tag => tag.startsWith("#") && !tag.includes(" "));
+        return validTags.join(",");
+      };
+
+    const updateTopic = async () => {
+        try {
+            if (!researchTitle.trim() || !researchDescription.trim()) {
+                alert("Title and description cannot be empty.");
+                return;
+            }
+            const resp = await httpClient.put(`//localhost:5000/api/researches/${researchId}`, {
+                "title": researchTitle,
+                "description": researchDescription,
+                "tags":processTags(researchTags)
+            });
+
+            if (resp.status === 200) {
+                fetchResearchData();
+                alert("Research details updated successfully.");
+                if (resp.data.tags && resp.data.tags.length > 0) {
+                    const convertedTags = resp.data.tags.split(",").map(tag => tag.trim()).join(" ");
+                    setResearchTags(convertedTags);
+                }
+
+            }
+            
+            if (resp.status != 200) {
+                alert("An error occurred. Please try again.");
+            }
+            
+        } catch (e) {
+            console.log(e);
+            if (e.response?.status === 401) {
+            window.location.href = "/";
+            } else {
+            alert("An error occurred. Please try again.");
+            }
+        }
+    };
+
+    const deleteResearch = async () => {
+        try {
+            const resp = await httpClient.delete(`//localhost:5000/api/researches/${researchId}`);
+
+            if (resp.status === 200) {
+                alert("Research deleted successfully.");
+                window.history.back();
+            }
+            
+            if (resp.status != 200) {
+                alert("An error occurred. Please try again.");
+            }
+            
+        } catch (e) {
+            console.log(e);
+            if (e.response?.status === 401) {
+                window.location.href = "/";
+            } else {
+            alert("An error occurred. Please try again.");
+            }
+        }
+    };
+
+    useEffect(() => {
+        fetchUserId();
+        fetchResearchData();
+    
+    }, []);
+
+
+    return (
+        <Container>
+            <Stack direction="row" spacing={4}>
+                <Tabs.Root defaultValue="graph" width="500px">
+                    <Tabs.List>
+                        <Tabs.Trigger value="graph" asChild>
+                            <Link unstyled href="#graph" fontSize="lg" fontWeight="bold" sx={{ pointerEvents: "none", cursor: "default" }}>
+                                Research Graph
+                            </Link>
+                        </Tabs.Trigger>
+                        
+                    </Tabs.List>
+                    <Tabs.Content value="graph">
+                        <Box pl="2" maxWidth="600px"  pr="4" display="flex" flexDirection="column">
+                            <Box 
+                            pt="4" pl="4" pb="4" borderRadius={8} bg={useColorModeValue("gray.100", "gray.500")}
+                            borderColor={useColorModeValue("gray.800", "gray.300")} border="2px solid"
+                            display="flex" flexDirection="column" 
+                            >
+                                <Image
+                                    src='/graphSample.png'
+                                    boxSize="350px"
+                                    fit="cover"
+                                />
+                        
+                            </Box>
+                            <Dialog.Root size="cover" placement="center" motionPreset="slide-in-bottom">
+                                <Dialog.Trigger asChild>
+                                    <Button 
+                                    textStyle="lg" 
+                                    minWidth="40px" 
+                                    height="auto" 
+                                    padding="8px"
+                                    whiteSpace="normal"
+                                    textAlign="center"
+                                    alignSelf="center"
+                                    mt={10}
+                                    bg="blue.800"
+                                >
+                                    + Add new node to the graph
+                                </Button>
+                                </Dialog.Trigger>
+                                <Portal>
+                                    <Dialog.Backdrop />
+                                    <Dialog.Positioner pr="24" pl="24">
+                                    <Dialog.Content>
+                                        <Dialog.Header>
+                                            <Dialog.Title>Add new node to the graph</Dialog.Title>
+                                        </Dialog.Header>
+                                        <Dialog.Body pb="4">
+                                            <Stack gap="4">
+                                                <Field.Root required>
+                                                    <Field.Label>Title <Field.RequiredIndicator /></Field.Label>
+                                                    <Input value="sdsdsd" placeholder="Enter research title..."/>
+                                                </Field.Root>
+                                                <Field.Root required>
+                                                    <Field.Label>
+                                                    Description <Field.RequiredIndicator />
+                                                    </Field.Label>
+                                                    <InputGroup>
+                                                        <Textarea placeholder="Enter research description..."  height="200px" variant="outline"/>
+                                                    </InputGroup>
+                                                
+                                                </Field.Root>
+                                                <Field.Root required>
+                                                    <Field.Label>Tags <Field.RequiredIndicator /></Field.Label>
+                                                    <Input value="dfsdfdsfsfs"placeholder="Enter research topics..."/>
+                                                    <Field.HelperText fontSize="2xs">You can add as many tag as much. You need to add '#' in front of each tag and seperate them with ','. Also, you should not use space character in your tags. Tags that does not satisfy these requirements will not be added to the tag list.</Field.HelperText>
+                                                    <Field.HelperText fontSize="2xs">e.g., #chatGPT, #GenerativeAI, #LLMSs, #bigData, #workingWithKubernates</Field.HelperText>
+                                                    
+                                                </Field.Root>
+                                            </Stack>
+                                        </Dialog.Body>
+                                        <Dialog.Footer>
+                                            <Dialog.ActionTrigger asChild>
+                                                <Button variant="outline" >Cancel</Button>
+                                            </Dialog.ActionTrigger>
+                                            <Dialog.ActionTrigger asChild>
+                                                <Button bg="blue.800" onClick={() => createTopic()}>Create</Button>
+                                            </Dialog.ActionTrigger>
+                                        </Dialog.Footer>
+                                    </Dialog.Content>
+                                    </Dialog.Positioner>
+                                </Portal>
+                            </Dialog.Root>
+                            <Flex direction="column" pt="50px" justifyContent="space-between" wrap="nowrap" width="100%">
+                                <Text fontSize="xl" fontWeight="bold" textDecoration="underline" pb="2">
+                                    Topic Tags
+                                </Text>
+                                <Text fontSize="xs">
+                                    {researchTags}
+                                </Text>
+                            </Flex>
+                        </Box>
+                    </Tabs.Content>
+                </Tabs.Root>
+                
+                <Tabs.Root defaultValue="Researchs" pl="10"  width="80%">
+                    <Tabs.List>
+                        <Tabs.Trigger value="Researchs" asChild>
+                            <Link unstyled href="#Researchs" fontSize="lg" fontWeight="bold">{researchTitle}</Link>
+                        </Tabs.Trigger>
+                    </Tabs.List>
+
+                    <Tabs.Content value="Researchs" >
+                        <Box flex="1" display="flex" flexDirection="column">
+                            <Box pt="4" pl="4" pr="4" pb="4" borderRadius={8} 
+                                borderColor={useColorModeValue("gray.800", "gray.300")} 
+                                    border="1px solid" display="flex" flexDirection="column" overflowY="auto" maxHeight="90vh">
+                                <Stack gap="3" direction="column" height="100%" pr="4">
+                                    <Card.Root size="sm" width="100%" pt="0.5" height="100%" bg={useColorModeValue("gray.300", "gray.500")}>
+                                        <Card.Body gap="2" pl="8" pt="5">
+                                            <Flex alignItems="center" justifyContent="space-between" height="100%">
+                                                <Stack gap="5" direction="column" flex="1">
+                                                    <Card.Title mb="-0.5" textStyle="md" fontWeight="normal">{researchDescription}</Card.Title>
+                                                    <Flex justifyContent="space-between" alignItems="center">
+                                                        <Stack gap="-0.5" direction="column">
+                                                            <Text textStyle="2xs">Author: {authorName}</Text>
+                                                            <Text textStyle="2xs">Created At: {createdAt}</Text>
+                                                        </Stack>
+                                                        {userName === authorName && (
+                                                            <Stack gap="2" direction="row">
+                                                                <Dialog.Root size="cover" placement="center" motionPreset="slide-in-bottom">
+                                                                    <Dialog.Trigger asChild>
+                                                                        <IconButton
+                                                                            aria-label="Call support"
+                                                                            key="surface"
+                                                                            variant="surface"
+                                                                            >
+                                                                            <LuPencilLine  />
+                                                                        </IconButton>
+                                                                    </Dialog.Trigger>
+                                                                    <Portal>
+                                                                        <Dialog.Backdrop />
+                                                                        <Dialog.Positioner pr="24" pl="24">
+                                                                        <Dialog.Content>
+                                                                            <Dialog.Header>
+                                                                                <Dialog.Title>Update Research Discussion Details</Dialog.Title>
+                                                                            </Dialog.Header>
+                                                                            <Dialog.Body pb="4">
+                                                                                <Stack gap="4">
+                                                                                    <Field.Root required>
+                                                                                        <Field.Label>Title <Field.RequiredIndicator /></Field.Label>
+                                                                                        <Input value={researchTitle} onChange={(e) => setResearchTitle(e.target.value)} placeholder="Enter research title..."/>
+                                                                                    </Field.Root>
+                                                                                    <Field.Root required>
+                                                                                        <Field.Label>Description <Field.RequiredIndicator /></Field.Label>
+                                                                                        <InputGroup
+                                                                                            endElement={
+                                                                                                <Span color="fg.muted" textStyle="xs" position="relative" pt="180px">
+                                                                                                {researchDescription.length} / {1000}
+                                                                                                </Span>
+                                                                                            }
+                                                                                            >
+                                                                                            <Textarea value={researchDescription} maxLength={1000} onChange={(e) => setResearchDesc(e.target.value)} placeholder="Enter research description..."  height="200px" variant="outline"/>
+                                                                                        </InputGroup>
+                                                                                    
+                                                                                    </Field.Root>
+                                                                                    <Field.Root required>
+                                                                                        <Field.Label>Tags <Field.RequiredIndicator /></Field.Label>
+                                                                                        <Input value={researchTags} onChange={(e) => setResearchTags(e.target.value)} placeholder="Enter research topics..."/>
+                                                                                        <Field.HelperText fontSize="2xs">You can add as many tag as much. You need to add '#' in front of each tag and seperate them with ','. Also, you should not use space character in your tags. Tags that does not satisfy these requirements will not be added to the tag list.</Field.HelperText>
+                                                                                        <Field.HelperText fontSize="2xs">e.g., #chatGPT, #GenerativeAI, #LLMSs, #bigData, #workingWithKubernates</Field.HelperText>
+                                                                                        
+                                                                                    </Field.Root>
+                                                                                </Stack>
+                                                                            </Dialog.Body>
+                                                                            <Dialog.Footer>
+                                                                                <Dialog.ActionTrigger asChild>
+                                                                                    <Button variant="outline" >Cancel</Button>
+                                                                                </Dialog.ActionTrigger>
+                                                                                <Dialog.ActionTrigger asChild>
+                                                                                    <Button bg="blue.800"  onClick={() => updateTopic()} disabled={researchTitle.trim() === "" || researchDescription.trim() === ""}>Update</Button>
+                                                                                </Dialog.ActionTrigger>
+                                                                            </Dialog.Footer>
+                                                                        </Dialog.Content>
+                                                                        </Dialog.Positioner>
+                                                                    </Portal>
+                                                                </Dialog.Root>
+                                                                <Dialog.Root role="alertdialog" placement="center">
+                                                                    <Dialog.Trigger asChild>
+                                                                        <IconButton
+                                                                            aria-label="Call support"
+                                                                            key="surface"
+                                                                            colorPalette="red"
+                                                                            variant="surface"
+                                                                            >
+                                                                            <LuTrash  />
+                                                                        </IconButton>
+                                                                    </Dialog.Trigger>
+                                                                    <Portal>
+                                                                        <Dialog.Backdrop />
+                                                                        <Dialog.Positioner>
+                                                                            <Dialog.Content>
+                                                                                <Dialog.Header>
+                                                                                    <Dialog.Title>Delete Research?</Dialog.Title>
+                                                                                </Dialog.Header>
+                                                                                <Dialog.Body>
+                                                                                    <p>
+                                                                                        Are you sure you want to delete your Research? This action cannot be undone. This will permanently delete your
+                                                                                        research, comments, connection graph from our systems.
+                                                                                    </p>
+                                                                                </Dialog.Body>
+                                                                                <Dialog.Footer>
+                                                                                    <Dialog.ActionTrigger asChild>
+                                                                                        <Button variant="outline">Cancel</Button>
+                                                                                    </Dialog.ActionTrigger>
+                                                                                    <Button colorPalette="red" onClick={() => deleteResearch()}>Delete</Button>
+                                                                                </Dialog.Footer>
+                                                                                <Dialog.CloseTrigger asChild>
+                                                                                    <CloseButton size="sm" />
+                                                                                </Dialog.CloseTrigger>
+                                                                            </Dialog.Content>
+                                                                        </Dialog.Positioner>
+                                                                    </Portal>
+                                                                </Dialog.Root>
+                                                            </Stack>
+                                                        )}
+                                                    </Flex>
+                                                </Stack>
+                                            </Flex>
+                                        </Card.Body>
+                                    </Card.Root>
+                                    <Box flex="1" display="flex" flexDirection="column">
+                                    <Text textStyle="xl" fontWeight="bold">Comments</Text>
+                                        <For each={comments}>
+                                            {(comment) => (
+                                                <Box flex="1" display="flex" pt="3" flexDirection="row" alignItems="center">
+                                                    <img src='/comment_arrow.png' alt='React logo' width={50} height={2} style={{ flexShrink: 0 }} />
+                                                    <Card.Root size="sm" width="100%" key={comment.title} pt="0.5" height="100%" bg={useColorModeValue("gray.100", "gray.300")}>
+                                                        <Card.Body gap="2" pl="8" pt="5">
+                                                            <Flex alignItems="center" justifyContent="space-between" height="100%">
+                                                                <Stack gap="5" direction="column" flex="1">
+                                                                    <Card.Title mb="-0.5" textStyle="sm" fontWeight="normal">{comment.commentText}</Card.Title>
+                                                                    <Stack gap="-0.5" direction="column">
+                                                                        <Text textStyle="2xs">Author: {comment.author}</Text>
+                                                                        <Text textStyle="2xs">Created At: {comment.date}</Text>
+                                                                    </Stack>
+                                                                </Stack>
+                                                            </Flex>
+                                                        </Card.Body>
+                                                    </Card.Root>
+                                                </Box>
+                                            )}
+                                        </For>
+                                    </Box>
+                                </Stack>
+                            </Box>
+                        </Box>
+                    </Tabs.Content>
+                </Tabs.Root>
+                
+            </Stack>
+            
+        </Container>
+    );        
+};
+
+export default ResearchDetailsPage;
