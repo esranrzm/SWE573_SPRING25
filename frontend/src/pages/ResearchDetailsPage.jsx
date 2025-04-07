@@ -1,7 +1,7 @@
 import { Box, Button, Container, Flex, Text, Stack, For, Card, Image, Portal, Input, Field, Dialog, Tabs, Link, InputGroup, IconButton, Textarea, Span, CloseButton} from "@chakra-ui/react";
 import { LuPencilLine, LuTrash  } from "react-icons/lu"
 import { useColorModeValue } from "../components/ui/color-mode";
-import { useRef, useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useLocation } from 'react-router-dom';
 import httpClient from "@/httpClient";
 
@@ -15,26 +15,9 @@ const ResearchDetailsPage = () => {
     const [researchTags, setResearchTags] = useState("");
     const [createdAt, setResearchDate] = useState("");
     const [userName, setUserName] = useState("");
+    const [currentComment, setCurrentComment] = useState("");
+    const [resultCommentList, setResultCommentList] = useState([]);
 
-
-    const comments = [
-        { 
-        commentText: "Kotlin and Flutter are both popular choices for mobile development, but they serve different purposes. Kotlin is a statically-typed programming language primarily used for Android development, offering seamless integration with Java and providing a modern, concise alternative to Java. It excels in creating native Android apps with full access to platform features. Flutter, on the other hand, is a cross-platform framework that uses the Dart language to create natively compiled apps for both Android and iOS from a single codebase. It excels in building beautiful UIs with a rich set of pre-built widgets and offers high performance. The choice depends on your needs: if you need a native Android app, Kotlin is ideal, but for cross-platform apps, Flutter is the go-to option for faster development and broader reach.", 
-        author: "esranzm",
-        date: "2025-03-18 16:43:54" },
-        { 
-        commentText: "Kotlin and Flutter are both popular choices for mobile development, but they serve different purposes. Kotlin is a statically-typed programming language primarily used for Android development, offering seamless integration with Java and providing a modern, concise alternative to Java. It excels in creating native Android apps with full access to platform features. Flutter, on the other hand, is a cross-platform framework that uses the Dart language to create natively compiled apps for both Android and iOS from a single codebase. It excels in building beautiful UIs with a rich set of pre-built widgets and offers high performance. The choice depends on your needs: if you need a native Android app, Kotlin is ideal, but for cross-platform apps, Flutter is the go-to option for faster development and broader reach.", 
-        author: "alikoc",
-        date: "2025-03-18 16:43:54" },
-        { 
-        commentText: "Kotlin and Flutter are both popular choices for mobile development, but they serve different purposes. Kotlin is a statically-typed programming language primarily used for Android development, offering seamless integration with Java and providing a modern, concise alternative to Java. It excels in creating native Android apps with full access to platform features. Flutter, on the other hand, is a cross-platform framework that uses the Dart language to create natively compiled apps for both Android and iOS from a single codebase. It excels in building beautiful UIs with a rich set of pre-built widgets and offers high performance. The choice depends on your needs: if you need a native Android app, Kotlin is ideal, but for cross-platform apps, Flutter is the go-to option for faster development and broader reach.", 
-        author: "messi123",
-        date: "2025-03-18 16:43:54" },
-        {
-        commentText: "The choice depends on youplatform apps, Flutter reach.", 
-        author: "messi123asa",
-        date: "2025-03-23 16:43:54" }
-    ];
 
     const fetchUserId = async () => {
         try {
@@ -67,6 +50,28 @@ const ResearchDetailsPage = () => {
                     setResearchTags(convertedTags);
                 }
                 setResearchDate(resp.data.createdAt)
+
+            }
+            
+            if (resp.status != 200) {
+                alert("An error occurred. Please try again.");
+            }
+            
+        } catch (e) {
+            console.log(e);
+            if (e.response?.status === 401) {
+            window.location.href = "/";
+            } else {
+            alert("An error occurred. Please try again.");
+            }
+        }
+    };
+
+    const fecthResearchComments = async () => {
+        try {
+            const resp = await httpClient.get(`//localhost:5000/api/comments/research/${researchId}`);
+            if (resp.status === 200) {
+                setResultCommentList(resp.data);
 
             }
             
@@ -149,9 +154,64 @@ const ResearchDetailsPage = () => {
         }
     };
 
+    const updateCurrentComment = async (commentId) => {
+        try {
+            if (!currentComment.trim()) {
+                alert("Comment cannot be empty.");
+                return;
+            }
+
+            const resp = await httpClient.put(`//localhost:5000/api/comments/${commentId}`, {
+                "comment": currentComment
+            });
+
+            if (resp.status === 200) {
+                fecthResearchComments();
+                alert("Comment updated successfully.");
+            }
+            
+            if (resp.status != 200) {
+                alert("An error occurred. Please try again.");
+            }
+
+        } catch (e) {
+            console.log(e);
+            if (e.response?.status === 401) {
+                window.location.href = "/";
+            } else {
+            alert("An error occurred. Please try again.");
+            }
+    }
+
+    };
+
+    const deleteCurrentComment = async (commentId) => {
+        try {
+            const resp = await httpClient.delete(`//localhost:5000/api/comments/${commentId}`);
+
+            if (resp.status === 200) {
+                alert("Comment deleted successfully.");
+                fecthResearchComments();
+            }
+            
+            if (resp.status != 200) {
+                alert("An error occurred. Please try again.");
+            }
+            
+        } catch (e) {
+            console.log(e);
+            if (e.response?.status === 401) {
+                window.location.href = "/";
+            } else {
+            alert("An error occurred. Please try again.");
+            }
+        }
+    };
+
     useEffect(() => {
         fetchUserId();
         fetchResearchData();
+        fecthResearchComments();
     
     }, []);
 
@@ -253,7 +313,7 @@ const ResearchDetailsPage = () => {
                     </Tabs.Content>
                 </Tabs.Root>
                 
-                <Tabs.Root defaultValue="Researchs" pl="10"  width="80%">
+                <Tabs.Root defaultValue="Researchs" pl="10" pb="10" width="80%">
                     <Tabs.List>
                         <Tabs.Trigger value="Researchs" asChild>
                             <Link unstyled href="#Researchs" fontSize="lg" fontWeight="bold">{researchTitle}</Link>
@@ -380,20 +440,104 @@ const ResearchDetailsPage = () => {
                                         </Card.Body>
                                     </Card.Root>
                                     <Box flex="1" display="flex" flexDirection="column">
-                                    <Text textStyle="xl" fontWeight="bold">Comments</Text>
-                                        <For each={comments}>
+                                        <Text textStyle="xl" fontWeight="bold">Comments</Text>
+                                        <For each={resultCommentList}>
                                             {(comment) => (
                                                 <Box flex="1" display="flex" pt="3" flexDirection="row" alignItems="center">
                                                     <img src='/comment_arrow.png' alt='React logo' width={50} height={2} style={{ flexShrink: 0 }} />
-                                                    <Card.Root size="sm" width="100%" key={comment.title} pt="0.5" height="100%" bg={useColorModeValue("gray.100", "gray.300")}>
+                                                    <Card.Root size="sm" width="100%" key={"comment.title"} pt="0.5" height="100%" bg={useColorModeValue("gray.100", "gray.300")}>
                                                         <Card.Body gap="2" pl="8" pt="5">
                                                             <Flex alignItems="center" justifyContent="space-between" height="100%">
                                                                 <Stack gap="5" direction="column" flex="1">
-                                                                    <Card.Title mb="-0.5" textStyle="sm" fontWeight="normal">{comment.commentText}</Card.Title>
-                                                                    <Stack gap="-0.5" direction="column">
-                                                                        <Text textStyle="2xs">Author: {comment.author}</Text>
-                                                                        <Text textStyle="2xs">Created At: {comment.date}</Text>
-                                                                    </Stack>
+                                                                    <Card.Title mb="-0.5" textStyle="sm" fontWeight="normal">{comment.comment}</Card.Title>
+                                                                    <Flex justifyContent="space-between" alignItems="center">
+                                                                        <Stack gap="-0.5" direction="column">
+                                                                            <Text textStyle="2xs">Author: {comment.author_name}</Text>
+                                                                            <Text textStyle="2xs">Created At: {comment.created_at}</Text>
+                                                                        </Stack>
+                                                                        {userName === comment.author_name && (
+                                                                            <Stack gap="2" direction="row">
+                                                                                <Dialog.Root placement="center" motionPreset="slide-in-bottom">
+                                                                                    <Dialog.Trigger asChild>
+                                                                                        <IconButton
+                                                                                            aria-label="Call support"
+                                                                                            key="surface"
+                                                                                            variant="surface"
+                                                                                            >
+                                                                                            <LuPencilLine  />
+                                                                                        </IconButton>
+                                                                                    </Dialog.Trigger>
+                                                                                    <Portal>
+                                                                                        <Dialog.Backdrop />
+                                                                                        <Dialog.Positioner pr="24" pl="24">
+                                                                                            <Dialog.Content>
+                                                                                                <Dialog.Header>
+                                                                                                    <Dialog.Title>Update comment</Dialog.Title>
+                                                                                                </Dialog.Header>
+                                                                                                <Dialog.Body pb="4">
+                                                                                                    <Stack gap="4">
+                                                                                                        <Field.Root>
+                                                                                                            <Field.Label>Your comment</Field.Label>
+                                                                                                            <InputGroup>
+                                                                                                                <Textarea value={currentComment} placeholder="write your comment here..." maxLength={1000} onChange={(e) => setCurrentComment(e.target.value)} height="300px" variant="outline" />
+                                                                                                            </InputGroup>
+                                                                                                        </Field.Root>
+                                                                                                        
+                                                                                                    </Stack>
+                                                                                                </Dialog.Body>
+                                                                                                <Dialog.Footer>
+                                                                                                    <Dialog.ActionTrigger asChild>
+                                                                                                        <Button variant="outline">Cancel</Button>
+                                                                                                    </Dialog.ActionTrigger>
+                                                                                                    <Dialog.ActionTrigger asChild>
+                                                                                                        <Button bg="blue.500" color="white" _hover={{ bg: "blue.600" }}  alignContent="center" onClick={() => updateCurrentComment(comment.id)}>Update</Button>
+                                                                                                    </Dialog.ActionTrigger>
+                                                                                                </Dialog.Footer>
+                                                                                            </Dialog.Content>
+                                                                                        </Dialog.Positioner>
+                                                                                    </Portal>
+                                                                                </Dialog.Root>
+                                                                                <Dialog.Root role="alertdialog" placement="center">
+                                                                                    <Dialog.Trigger asChild>
+                                                                                        <IconButton
+                                                                                            aria-label="Call support"
+                                                                                            key="surface"
+                                                                                            colorPalette="red"
+                                                                                            variant="surface"
+                                                                                            >
+                                                                                            <LuTrash  />
+                                                                                        </IconButton>
+                                                                                    </Dialog.Trigger>
+                                                                                    <Portal>
+                                                                                        <Dialog.Backdrop />
+                                                                                        <Dialog.Positioner>
+                                                                                            <Dialog.Content>
+                                                                                                <Dialog.Header>
+                                                                                                    <Dialog.Title>Delete Comment?</Dialog.Title>
+                                                                                                </Dialog.Header>
+                                                                                                <Dialog.Body>
+                                                                                                    <p>
+                                                                                                        Are you sure you want to delete your Comment? This action cannot be undone. This will permanently delete your
+                                                                                                        comment from our systems.
+                                                                                                    </p>
+                                                                                                </Dialog.Body>
+                                                                                                <Dialog.Footer>
+                                                                                                    <Dialog.ActionTrigger asChild>
+                                                                                                        <Button variant="outline">Cancel</Button>
+                                                                                                    </Dialog.ActionTrigger>
+                                                                                                    <Button colorPalette="red" onClick={() => deleteCurrentComment(comment.id)}>Delete</Button>
+                                                                                                </Dialog.Footer>
+                                                                                                <Dialog.CloseTrigger asChild>
+                                                                                                    <CloseButton size="sm" />
+                                                                                                </Dialog.CloseTrigger>
+                                                                                            </Dialog.Content>
+                                                                                        </Dialog.Positioner>
+                                                                                    </Portal>
+                                                                                </Dialog.Root>
+                                                                            </Stack>
+                                                                        )}
+                                                                    </Flex>
+                                                                    
                                                                 </Stack>
                                                             </Flex>
                                                         </Card.Body>
@@ -409,7 +553,6 @@ const ResearchDetailsPage = () => {
                 </Tabs.Root>
                 
             </Stack>
-            
         </Container>
     );        
 };
