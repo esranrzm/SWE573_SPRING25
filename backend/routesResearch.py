@@ -1,9 +1,10 @@
 from app import app, db
 from flask import request, jsonify, session
-from models import Research, User
+from models import Research, User, Comment
 from flask_bcrypt import Bcrypt
 from flask_session import Session
 from datetime import datetime
+import requests
 
 bcrypt = Bcrypt(app)
 server_session = Session(app)
@@ -100,8 +101,17 @@ def delete_research(id):
         if research is None:
             return jsonify({"error": "Research not found"}), 400
         
+        research_comments = Comment.query.filter_by(research_id=id).order_by(Comment.created_at.desc()).all()
+
+        if research_comments:
+            try:
+                response = requests.delete(f"http://localhost:5000/api/comments/research/{id}")
+            except requests.exceptions.RequestException as e:
+                app.logger.error(f"Failed to delete comments for research {id}: {e}")
+        
         db.session.delete(research)
         db.session.commit()
+
         return jsonify({"msg":"Research deleted successfully"}),200
     
     except Exception as e:

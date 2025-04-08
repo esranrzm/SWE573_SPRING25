@@ -16,6 +16,7 @@ const ResearchDetailsPage = () => {
     const [createdAt, setResearchDate] = useState("");
     const [userName, setUserName] = useState("");
     const [currentComment, setCurrentComment] = useState("");
+    const [newComment, setNewComment] = useState("");
     const [resultCommentList, setResultCommentList] = useState([]);
 
 
@@ -75,16 +76,20 @@ const ResearchDetailsPage = () => {
 
             }
             
-            if (resp.status != 200) {
+            if (resp.status != 200 & resp.status != 404) {
                 alert("An error occurred. Please try again.");
             }
             
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-            window.location.href = "/";
-            } else {
-            alert("An error occurred. Please try again.");
+                window.location.href = "/";
+            } 
+            else if (e.response?.status === 404) {
+                alert("There are no comments for this research");
+            }
+            else {
+                alert("An error occurred. Please try again.");
             }
         }
     };
@@ -204,6 +209,37 @@ const ResearchDetailsPage = () => {
                 window.location.href = "/";
             } else {
             alert("An error occurred. Please try again.");
+            }
+        }
+    };
+
+    const addNewComment = async () => {
+        try {
+            if (newComment.length < 1) {
+                alert("You cannot leave the comment area empty!");
+            } 
+            else {
+                const resp = await httpClient.post("//localhost:5000/api/comments/create", {
+                    "researchId": researchId,
+                    "comment": newComment
+                }) ;
+    
+                if (resp.status === 200) {
+                    alert("Comment added successfully.");
+                    fecthResearchComments();
+                }
+                
+                if (resp.status != 200) {
+                    alert("An error occurred. Please try again.");
+                }
+            }
+            
+        } catch (e) {
+            console.log(e);
+            if (e.response?.status === 401) {
+                window.location.href = "/";
+            } else {
+                alert("An error occurred. Please try again.");
             }
         }
     };
@@ -440,7 +476,58 @@ const ResearchDetailsPage = () => {
                                         </Card.Body>
                                     </Card.Root>
                                     <Box flex="1" display="flex" flexDirection="column">
-                                        <Text textStyle="xl" fontWeight="bold">Comments</Text>
+                                        <Stack gap="3" direction="row" height="100%" pr="4" justify="space-between">
+                                            <Text textStyle="xl" fontWeight="bold" pt={2}>Comments</Text>
+                                            <Dialog.Root placement="center" motionPreset="slide-in-bottom">
+                                                <Dialog.Trigger asChild>
+                                                    <IconButton
+                                                        aria-label="Call support"
+                                                        bg="blue.800"
+                                                        width={200}
+                                                        textStyle="md" 
+                                                        textAlign="center"
+                                                        alignSelf="center"
+                                                        >
+                                                        <LuPencilLine  />Add new Comment
+                                                    </IconButton>
+                                                </Dialog.Trigger>
+                                                <Portal>
+                                                    <Dialog.Backdrop />
+                                                    <Dialog.Positioner pr="24" pl="24">
+                                                        <Dialog.Content>
+                                                            <Dialog.Header>
+                                                                <Dialog.Title>Add new comment</Dialog.Title>
+                                                            </Dialog.Header>
+                                                            <Dialog.Body pb="4">
+                                                                <Stack gap="4">
+                                                                    <Field.Root>
+                                                                        <Field.Label>Write your comment</Field.Label>
+                                                                        <InputGroup
+                                                                            endElement={
+                                                                                <Span color="fg.muted" textStyle="xs" position="relative" pt="280px">
+                                                                                {newComment.length} / {1000}
+                                                                                </Span>
+                                                                            }
+                                                                        >
+                                                                            <Textarea value={newComment} placeholder="write your comment here..." maxLength={1000} onChange={(e) => setNewComment(e.target.value)} height="300px" variant="outline" />
+                                                                        </InputGroup>
+                                                                    </Field.Root>
+                                                                </Stack>
+                                                            </Dialog.Body>
+                                                            <Dialog.Footer>
+                                                                <Dialog.ActionTrigger asChild>
+                                                                    <Button variant="outline" onClick={() => setNewComment("")}>Cancel</Button>
+                                                                </Dialog.ActionTrigger>
+                                                                <Dialog.ActionTrigger asChild>
+                                                                    <Button bg="blue.500" color="white" _hover={{ bg: "blue.600" }}  alignContent="center" onClick={() => addNewComment()}>Add</Button>
+                                                                </Dialog.ActionTrigger>
+                                                            </Dialog.Footer>
+                                                        </Dialog.Content>
+                                                    </Dialog.Positioner>
+                                                </Portal>
+                                            </Dialog.Root>
+                                        </Stack>
+                                        
                                         <For each={resultCommentList}>
                                             {(comment) => (
                                                 <Box flex="1" display="flex" pt="3" flexDirection="row" alignItems="center">

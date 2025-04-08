@@ -148,6 +148,24 @@ def delete_comment(id):
         return jsonify({"error": str(e)}), 500
     
 
+@app.route("/api/comments/research/<string:research_id>", methods=["DELETE"])
+def delete_comments_by_research_id(research_id):
+    try:
+        comments = Comment.query.filter_by(research_id=research_id).all()
+        if not comments:
+            return jsonify({"error": "No comments found with that research_id"}), 400
+
+        for comment in comments:
+            db.session.delete(comment)
+        db.session.commit()
+
+        return jsonify({"msg": f"{len(comments)} comment(s) deleted successfully"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
 # update comment
 @app.route("/api/comments/<string:id>", methods=["PUT"])
 def update_comment(id):
