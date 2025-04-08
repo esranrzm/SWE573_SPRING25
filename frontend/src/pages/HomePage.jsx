@@ -1,67 +1,17 @@
 import { useNavigate } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback} from 'react';
 import httpClient from "@/httpClient";
-import { Box, Button, Container, Flex, Text, Stack, For, Card, Grid, Dialog, Portal, Field, Input, Textarea, InputGroup, Span } from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Text, Stack, For, Card, Grid, Dialog, Portal, Field, Input, Textarea, InputGroup, Span, Group, Link } from "@chakra-ui/react";
 import { useColorModeValue } from "../components/ui/color-mode";
 
 const HomePage = () => {
 
-    const [topicTitle, setTopicTitle] = useState("");
-    const [topicDescription, setTopicDescription] = useState("");
-    const [topicTags, setTopicTags] = useState("");
-    const navigate = useNavigate();
-
-    const MAX_CHARACTERS = 500
-
-    const fetchData = async () => {
-      try {
-        const resp = await httpClient.get("//localhost:5000/api/users/@me");
-        console.log(resp.status)
-        if (resp.status != 200) {
-          window.location.href = "/login";
-        }
-        
-      } catch (e) {
-        console.log(e);
-        if (e.response?.status === 401) {
-          window.location.href = "/";
-        } else {
-          alert("An error occurred. Please try again.");
-        }
-      }
-    };
-
-    useEffect(() => {
-      //fetchData();
-    });
-
-    const createTopic = async () => {
-            console.log(topicTitle);
-            console.log(topicDescription);
-            console.log(topicTags);
-            setTopicTitle("");
-            setTopicDescription("");
-            setTopicTags("");
-    
-        };
-
-
-    const topics = [
-      { title: "The usage of multi-agent LLMs in Code Generation", author: "esranzm", date: "2025-03-18 16:43:54" },
-      { title: "Which AI tool is best for unit test creation?", author: "esranzm", date: "2025-03-18 16:45:12" },
-      { title: "Kotlin vs Flutter. Which one to choose?", author: "esranzm", date: "2025-03-18 16:47:30" },
-      { title: "Advanced Kotlin Features You Should Know", author: "esranzm", date: "2025-03-19 09:15:00" },
-      { title: "How to Optimize Your Android Application's Performance", author: "esranzm", date: "2025-03-19 09:30:23" },
-      { title: "Exploring the Future of Artificial Intelligence in Software Development", author: "esranzm", date: "2025-03-19 09:45:45" },
-      { title: "Best Practices for Working with APIs in Mobile Development", author: "esranzm", date: "2025-03-19 10:00:12" }
-    ];
-
     const contributions = [
         { title: "Tips for Writing Efficient SQL Queries in Kotlin", author: "esranzm", date: "2025-03-19 10:10:34" },
         { title: "What Makes Kotlin a Great Choice for Android Development?", author: "esranzm", date: "2025-03-19 10:20:51" },
-        { title: "The Role of Machine Learning in Modern Software Engineering", author: "esranzm", date: "2025-03-19 10:35:18" },
+        { title: "The Role of Machine Learning in Modern Software Engineering", author: "velicelik", date: "2025-03-19 10:35:18" },
         { title: "Unit Testing Best Practices in Kotlin", author: "esranzm", date: "2025-03-19 10:50:03" },
-        { title: "How to Build Scalable Web Applications with Kotlin and Spring Boot", author: "esranzm", date: "2025-03-19 11:05:25" },
+        { title: "How to Build Scalable Web Applications with Kotlin and Spring Boot", author: "user34352", date: "2025-03-19 11:05:25" },
         { title: "Understanding the Basics of Kotlin Coroutines", author: "esranzm", date: "2025-03-19 11:20:42" }
         ];
       
@@ -76,7 +26,141 @@ const HomePage = () => {
       { title: "Dart", color: "teal.400" }
     ];
 
+    const [topicTitle, setTopicTitle] = useState("");
+    const [topicDescription, setTopicDescription] = useState("");
+    const [topicTags, setTopicTags] = useState("");
+    const [searchedTopic, setSearchedTopic] = useState("");
+    const [searchedHotTopic, setSearchedHotTopic] = useState("");
+    const [resultTopicList, setResultTopicList] = useState([]);
+    const [resultHotTopicList, setResultHotTopicList] = useState(contributions);
+    const navigate = useNavigate();
 
+    const MAX_CHARACTERS = 1000
+
+    const fetchData = useCallback(async () => {
+      try {
+        const resp = await httpClient.get("//localhost:5000/api/users/@me");
+        //console.log(resp.status)
+        if (resp.status != 200) {
+          window.location.href = "/login";
+        }
+        
+      } catch (e) {
+        console.log(e);
+        if (e.response?.status === 401) {
+          window.location.href = "/";
+        } else {
+          alert("An error occurred. Please try again.");
+        }
+      }
+    }, []);
+
+    const fetchResearchData = useCallback(async () => {
+      try { 
+        const resp = await httpClient.get("//localhost:5000/api/researches");
+        
+    
+        if (resp.status != 200) {
+            alert("An error occurred. Please try again.");
+        }
+        else if(resp.status === 200) {
+          setResultTopicList(resp.data)
+        }
+        
+      } catch (e) {
+        console.log(e);
+        if (e.response?.status === 401) {
+          window.location.href = "/";
+        } else {
+          alert("No research found");
+        }
+      }
+    }, []);
+
+    useEffect(() => {
+      const fetchAllData = async () => {
+        await fetchData();
+        await fetchResearchData();
+      };
+      fetchAllData();
+    }, [fetchData, fetchResearchData]);
+
+    const processTags = (input) => {
+      const tags = input.split(",").map(tag => tag.trim());
+      const validTags = tags.filter(tag => tag.startsWith("#") && !tag.includes(" "));
+      return validTags.join(",");
+    };
+
+    const createTopic = async () => {
+        console.log(topicTitle);
+        console.log(topicDescription);
+        console.log(topicTags);
+
+        try { 
+          setTopicTags(processTags(topicTags));
+          const resp = await httpClient.post("//localhost:5000/api/researches/create", {
+              "title": topicTitle,
+              "description": topicDescription,
+              "tags": topicTags
+          });
+          
+      
+          if (resp.status != 200) {
+              alert("An error occurred. Please try again.");
+          }
+          else if(resp.status === 200) {
+            alert("Research topic created successfully");
+            fetchResearchData();
+          }
+          
+        } catch (e) {
+          console.log(e);
+          if (e.response?.status === 401) {
+            window.location.href = "/";
+          } 
+          else if (e.response?.status === 404) {
+            alert("User Not found in db. Please contact support!");
+          }
+          else {
+            alert("No research found");
+          }
+        }
+
+    };
+
+    const searchHotResearchTopic = () => {
+      if (searchedHotTopic === "") 
+      { 
+        setResultHotTopicList(contributions);
+        return;
+      }
+      const filterHotTopicBySearch = contributions.filter((item) => 
+        item.title.toLowerCase().includes(searchedHotTopic.toLowerCase()) || 
+        item.author.toLowerCase().includes(searchedHotTopic.toLowerCase())
+      )
+      setResultHotTopicList(filterHotTopicBySearch);
+    }
+
+    const searchResearchTopic = () => {
+      if (searchedTopic === "") 
+        { 
+          fetchResearchData();
+          setResultTopicList(resultTopicList);
+          return;
+        }
+        const filterBySearch = resultTopicList.filter((item) => 
+          item.title.toLowerCase().includes(searchedTopic.toLowerCase()) || 
+          item.authorName.toLowerCase().includes(searchedTopic.toLowerCase())
+          );
+          setResultTopicList(filterBySearch);
+    }
+
+    const directToDetails = (topicId) => {
+      // Navigate to another page with the topicId and filtered tags
+      navigate(`/researchDetails?param=${topicId}`);
+    };
+
+    
     return (
       <Container maxW="100%">
         <Stack direction="column" spacing={4}>
@@ -170,7 +254,13 @@ const HomePage = () => {
               <Box pt="4" px="4" pb="4" borderRadius={8} borderColor={useColorModeValue("gray.800", "gray.300")}
                 border="2px solid" display="flex" flexDirection="column" overflowY="auto" maxHeight="530px">
                 <Stack gap="3" direction="column" overflowY="auto" pr="4">
-                  <For each={topics}>
+                  <Group attached w="full" maxW="2md">
+                    <Input flex="1" placeholder="Search Research" onChange={(e) => setSearchedTopic(e.target.value)}/>
+                    <Button bg={useColorModeValue("black.500", "gray.400")} onClick={() => searchResearchTopic()}>
+                      Search
+                    </Button>
+                  </Group>
+                  <For each={resultTopicList}>
                     {(topic) => (
                       <Card.Root size="sm" width="100%" key={topic.title} pt="0.5" height="150px" bg={useColorModeValue("gray.300", "gray.500")}>
                         <Card.Body gap="2" pl="8" pt="5">
@@ -178,12 +268,20 @@ const HomePage = () => {
                             <Stack gap="5" direction="column" flex="1">
                               <Card.Title mb="-0.5" textStyle="sm">{topic.title}</Card.Title>
                               <Stack gap="-0.5" direction="column">
-                                <Text textStyle="2xs">Author: {topic.author}</Text>
-                                <Text textStyle="2xs">Created At: {topic.date}</Text>
+                                <Text textStyle="2xs">Author: {topic.authorName}</Text>
+                                <Text textStyle="2xs">Created At: {topic.createdAt}</Text>
                               </Stack>
                             </Stack>
                             <Card.Footer>
-                              <Button textStyle="xs" width="65px" height="30px">View</Button>
+                              <Button 
+                                textStyle="xs" 
+                                width="65px" 
+                                height="30px" 
+                                onClick={() => directToDetails(topic.id)}
+                              >View</Button>
+
+                            
+                              
                             </Card.Footer>
                           </Flex>
                         </Card.Body>
@@ -199,7 +297,13 @@ const HomePage = () => {
               <Box pt="4" px="4" pb="4" borderRadius={8} borderColor={useColorModeValue("gray.800", "gray.300")}
                 border="2px solid" display="flex" flexDirection="column" overflowY="auto" maxHeight="530px">
                 <Stack gap="3" direction="column" overflowY="auto" pr="4">
-                  <For each={contributions}>
+                  <Group attached w="full" maxW="2md">
+                    <Input flex="1" placeholder="Search Hot Topic" onChange={(e) => setSearchedHotTopic(e.target.value)}/>
+                    <Button bg={useColorModeValue("black.500", "gray.400")} onClick={() => searchHotResearchTopic()}>
+                      Search
+                    </Button>
+                  </Group>
+                  <For each={resultHotTopicList}>
                     {(contribution) => (
                       <Card.Root size="sm" width="100%" key={contribution.title} pt="0.5" height="150px" bg={useColorModeValue("gray.300", "gray.500")}>
                         <Card.Body gap="2" pl="8" pt="5">

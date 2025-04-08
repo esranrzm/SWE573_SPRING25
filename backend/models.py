@@ -55,5 +55,24 @@ class Research(db.Model):
             "tags": self.tags,
             "createdAt": self.created_at
         }
+    
+class Comment(db.Model):
+    __tableName__ = "Comments"
+    id = db.Column(db.String(32), primary_key=True, unique=True, default=get_uuid)
+    author_id = db.Column(db.String(32), nullable=False)
+    author_name = db.Column(db.String(100), nullable=False)
+    research_id = db.Column(db.String(32), nullable=False)
+    comment = db.Column(db.String(1000), nullable=False)
+    created_at = db.Column(db.String(30), nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "authorId": self.author_id,
+            "authorName": self.author_name,
+            "researchId": self.research_id,
+            "comment": self.comment,
+            "createdAt": self.created_at
+        }
 
     

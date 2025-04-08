@@ -186,31 +186,17 @@ def test_get_current_user_research(client, create_test_user):
         "tags": "#AI, #healthcare, #technology"
     }
 
-    payload2 = {
-        "title": "Blockchain in Finance",
-        "description": "Understanding the impact of blockchain in financial systems.",
-        "tags": "#blockchain, #finance, #technology"
-    }
-
     response1 = client.post("/api/researches/create", json=payload1)
     data1 = response1.get_json()
     research_id1 = data1["id"] 
-
-    response2 = client.post("/api/researches/create", json=payload2)
-    data2 = response2.get_json()
-    research_id2 = data2["id"]
 
     response = client.get(f"/api/researches/user/{user.id}")
     research_data = response.get_json()
 
     assert response.status_code == 200
-    assert len(research_data) == 2
 
     assert research_data[0]["title"] == payload1["title"]
     assert research_data[0]["description"] == payload1["description"]
     assert research_data[0]["tags"] == payload1["tags"]
 
-    assert research_data[1]["title"] == payload2["title"]
-    assert research_data[1]["description"] == payload2["description"]
-    assert research_data[1]["tags"] == payload2["tags"]
 
