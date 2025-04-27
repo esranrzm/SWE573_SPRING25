@@ -14,6 +14,24 @@ def get_users():
     result = [user.to_json() for user in users]
     return jsonify(result)
 
+# get searched user
+@app.route("/api/users/getSearchedUser/<string:id>", methods=["GET"])
+def get_searched_user(id):
+    user = User.query.filter_by(id=id).first()
+
+    return jsonify({
+        "id": user.id,
+        "name": user.name,
+        "surname": user.surname,
+        "username": user.username,
+        "email": user.email,
+        "bio": user.bio,
+        "isAdmin": user.is_admin,
+        "occupation": user.occupation,
+        "img_url": user.image_url,
+        "hashedPassword": user.password
+    })
+
 # get current user
 @app.route("/api/users/@me", methods=["GET"])
 def get_current_user():

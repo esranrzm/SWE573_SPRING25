@@ -40,7 +40,6 @@ const HomePage = () => {
     const fetchData = useCallback(async () => {
       try {
         const resp = await httpClient.get("//localhost:5000/api/users/@me");
-        //console.log(resp.status)
         if (resp.status != 200) {
           window.location.href = "/login";
         }

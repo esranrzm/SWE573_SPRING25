@@ -7,15 +7,6 @@ import httpClient from "@/httpClient";
 
 const ProfilePage = () => {
 
-    const contributions = [
-        { title: "Tips for Writing Efficient SQL Queries in Kotlin", author: "esranzm", date: "2025-03-19 10:10:34" },
-        { title: "What Makes Kotlin a Great Choice for Android Development?", author: "esranzm", date: "2025-03-19 10:20:51" },
-        { title: "The Role of Machine Learning in Modern Software Engineering", author: "esranzm", date: "2025-03-19 10:35:18" },
-        { title: "Unit Testing Best Practices in Kotlin", author: "esranzm", date: "2025-03-19 10:50:03" },
-        { title: "How to Build Scalable Web Applications with Kotlin and Spring Boot", author: "esranzm", date: "2025-03-19 11:05:25" },
-        { title: "Understanding the Basics of Kotlin Coroutines", author: "esranzm", date: "2025-03-19 11:20:42" }
-        ];
-
     //const ref = useRef<HTMLInputElement>(null)
     const [username, setUsername] = useState("testUsername");
     const [name, setName] = useState("testName");
@@ -23,7 +14,7 @@ const ProfilePage = () => {
     const [searchedTopic, setSearchedTopic] = useState("");
     const [searchedHotTopic, setSearchedHotTopic] = useState("");
     const [resultTopicList, setResultTopicList] = useState([]);
-    const [resultHotTopicList, setResultHotTopicList] = useState(contributions);
+    const [resultHotTopicList, setResultHotTopicList] = useState([]);
     const [email, setEmail] = useState("testEmail.gmail.com");
     const [occupation, setOccupation] = useState("test test");
     const [oldPassword, setOldPassword] = useState("test123");
@@ -93,6 +84,29 @@ const ProfilePage = () => {
           }
         }
       };
+
+      const fetchCommentsResearchData = async () => {
+        try {
+          console.log(userId);  
+          const resp = await httpClient.get(`//localhost:5000/api/comments/user/${userId}`);
+          
+      
+          if (resp.status != 200) {
+              alert("An error occurred. Please try again.");
+          }
+          else if(resp.status === 200) {
+            setResultHotTopicList(resp.data)
+          }
+          
+        } catch (e) {
+          console.log(e);
+          if (e.response?.status === 401) {
+            //window.location.href = "/";
+          } else {
+            alert(`No comments/contributions found for the user ${username}`);
+          }
+        }
+      };
     
 
     useEffect(() => {
@@ -100,6 +114,7 @@ const ProfilePage = () => {
         fetchData();
         if (userId) {
             fetchResearchData();
+            fetchCommentsResearchData();
         }
     
       }, [userId]);
@@ -136,12 +151,12 @@ const ProfilePage = () => {
     const searchHotResearchTopic = () => {
         if (searchedHotTopic === "") 
         { 
-          setResultHotTopicList(contributions);
+          setResultHotTopicList(resultHotTopicList);
           return;
         }
-        const filterHotTopicBySearch = contributions.filter((item) => 
-          item.title.toLowerCase().includes(searchedHotTopic.toLowerCase()) || 
-          item.author.toLowerCase().includes(searchedHotTopic.toLowerCase())
+        const filterHotTopicBySearch = resultHotTopicList.filter((comment) => 
+            comment.title.toLowerCase().includes(searchedHotTopic.toLowerCase()) || 
+            comment.author.toLowerCase().includes(searchedHotTopic.toLowerCase())
         )
         setResultHotTopicList(filterHotTopicBySearch);
       }
@@ -586,12 +601,18 @@ const ProfilePage = () => {
                                                     <Stack gap="5" direction="column" flex="1">
                                                         <Card.Title mb="-0.5" textStyle="md">{contribution.title}</Card.Title>
                                                         <Stack gap="-0.5" direction="column">
-                                                            <Text textStyle="2xs">Author: {contribution.author}</Text>
-                                                            <Text textStyle="2xs">Created At: {contribution.date}</Text>
+                                                            <Text textStyle="2xs">Author: {contribution.authorName}</Text>
+                                                            <Text textStyle="2xs">Created At: {contribution.createdAt}</Text>
                                                         </Stack>
                                                     </Stack>
                                                     <Card.Footer>
-                                                        <Button>View</Button>
+                                                        <Button 
+                                                            textStyle="xs" 
+                                                            width="65px" 
+                                                            height="30px" 
+                                                            onClick={() => directToDetails(contribution.id)}>
+                                                            View
+                                                        </Button>
                                                     </Card.Footer>
                                                 </Flex>
                                             </Card.Body>
