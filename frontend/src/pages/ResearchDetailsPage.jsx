@@ -2,7 +2,7 @@ import { Box, Button, Container, Flex, Text, Stack, For, Card, Image, Portal, In
 import { LuPencilLine, LuTrash  } from "react-icons/lu"
 import { useColorModeValue } from "../components/ui/color-mode";
 import { useState, useEffect } from "react"
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import httpClient from "@/httpClient";
 
 const ResearchDetailsPage = () => {
@@ -11,19 +11,23 @@ const ResearchDetailsPage = () => {
     const researchId = queryParams.get('param');
     const [authorName, setAuthorName] = useState();
     const [researchTitle, setResearchTitle] = useState("");
+    const [authorId, setAuthorId] = useState("");
     const [researchDescription, setResearchDesc] = useState("");
     const [researchTags, setResearchTags] = useState("");
     const [createdAt, setResearchDate] = useState("");
     const [userName, setUserName] = useState("");
+    const [loggedUserId, setLoggedUserId] = useState("");
     const [currentComment, setCurrentComment] = useState("");
     const [newComment, setNewComment] = useState("");
     const [resultCommentList, setResultCommentList] = useState([]);
+    const navigate = useNavigate();
 
 
     const fetchUserId = async () => {
         try {
             const resp = await httpClient.get("//localhost:5000/api/users/@me");
             setUserName(resp.data.username)
+            setLoggedUserId(resp.data.id)
         
             if (resp.status != 200) {
                 alert("An error occurred. Please try again.");
@@ -44,6 +48,7 @@ const ResearchDetailsPage = () => {
             const resp = await httpClient.get(`//localhost:5000/api/researches/${researchId}`);
             if (resp.status === 200) {
                 setAuthorName(resp.data.authorName)
+                setAuthorId(resp.data.authorId)
                 setResearchTitle(resp.data.title)
                 setResearchDesc(resp.data.description)
                 if (resp.data.tags && resp.data.tags.length > 0) {
@@ -244,12 +249,23 @@ const ResearchDetailsPage = () => {
         }
     };
 
+    const directUserProfile = () => {
+        if (authorId === loggedUserId) {
+            navigate("/profile");
+          }
+          else {
+            navigate(`/otherUserProfile?param=${authorId}`);
+          }
+    }
+
     useEffect(() => {
         fetchUserId();
         fetchResearchData();
         fecthResearchComments();
     
     }, []);
+
+    
 
 
     return (
@@ -369,7 +385,9 @@ const ResearchDetailsPage = () => {
                                                     <Card.Title mb="-0.5" textStyle="md" fontWeight="normal">{researchDescription}</Card.Title>
                                                     <Flex justifyContent="space-between" alignItems="center">
                                                         <Stack gap="-0.5" direction="column">
-                                                            <Text textStyle="2xs">Author: {authorName}</Text>
+                                                            <Text textStyle="2xs" pb="3" onClick={directUserProfile} style={{ cursor: 'pointer' }}>
+                                                                Author: {authorName}
+                                                            </Text>
                                                             <Text textStyle="2xs">Created At: {createdAt}</Text>
                                                         </Stack>
                                                         {userName === authorName && (
@@ -539,7 +557,11 @@ const ResearchDetailsPage = () => {
                                                                     <Card.Title mb="-0.5" textStyle="sm" fontWeight="normal">{comment.comment}</Card.Title>
                                                                     <Flex justifyContent="space-between" alignItems="center">
                                                                         <Stack gap="-0.5" direction="column">
-                                                                            <Text textStyle="2xs">Author: {comment.author_name}</Text>
+                                                                            <Text
+                                                                                textStyle="2xs"
+                                                                                >
+                                                                                    Author: {comment.author_name}
+                                                                            </Text>
                                                                             <Text textStyle="2xs">Created At: {comment.created_at}</Text>
                                                                         </Stack>
                                                                         {userName === comment.author_name && (
