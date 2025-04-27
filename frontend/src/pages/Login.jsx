@@ -4,6 +4,7 @@ import { Button } from "@chakra-ui/react";
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from "react-router-dom";
 import "../components/pageDesigns/Login.css";
+import ConfigHelper from '../components/configHelper';
 import httpClient from "@/httpClient";
 
 const Login = () => {
@@ -18,7 +19,7 @@ const Login = () => {
                 username,
                 password,
             });
-            
+            ConfigHelper.setItem('username', username);
             window.location.href = "/home"
         }
         catch (e) {

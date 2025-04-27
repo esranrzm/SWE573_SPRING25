@@ -1,9 +1,10 @@
 import "../components/pageDesigns/ProfilePage.css";
-import { Box, Button, Container, Flex, Text, Stack, For, Card, Image, Input, DataList, Tabs, Link, Group} from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Text, Stack, For, Card, Image, Input, DataList, Tabs, Link, Group, Dialog, Portal, CloseButton} from "@chakra-ui/react";
 import { useColorModeValue } from "../components/ui/color-mode";
 import { useState, useEffect } from "react"
 import { useNavigate } from 'react-router-dom';
 import httpClient from "@/httpClient";
+import ConfigHelper from "@/components/configHelper";
 
 const OtherUserProfilePage = () => {
 
@@ -20,6 +21,7 @@ const OtherUserProfilePage = () => {
     const [searchedContributions, setSearchedContributionsTopic] = useState("");
     const [resultContributionsList, setResultContributionsList] = useState([]);
     const [resultTopicList, setResultTopicList] = useState([]);
+    const LoggedUsername = ConfigHelper.getItem('username');
     const navigate = useNavigate();
 
     const currentUser = [
@@ -140,6 +142,30 @@ const OtherUserProfilePage = () => {
         setResultContributionsList(filterContributionsBySearch);
       }
 
+    const deleteUser = async () => {
+        try {
+            const resp = await httpClient.delete(`//localhost:5000/api/users/${userId}`, {});
+
+            if (resp.status === 200) {
+                navigate(-1);
+                alert("User deleted successfully");
+            }
+            else {
+                alert("Error deleting account. Status code: " + resp.status);
+            }
+    
+        }
+        catch (e) {
+            console.log(e.response.data)
+            if (e.response.status === 400) {
+                alert("User not found");
+            }
+            else {
+                alert("Something went wrong!");
+            }
+        }
+    
+    };
 
     const directToDetails = (topicId) => {
         navigate(`/researchDetails?param=${topicId}`);
@@ -188,8 +214,43 @@ const OtherUserProfilePage = () => {
                                                 <DataList.ItemValue>{info.value}</DataList.ItemValue>
                                             </DataList.Item>
                                         ))}
-                                        </DataList.Root>
-                                    
+                                    </DataList.Root>
+                                    <Stack gap="1" direction="column" pt="5">
+                                        {LoggedUsername === "admin" && (
+                                            <Dialog.Root role="alertdialog" placement="center">
+                                            <Dialog.Trigger asChild>
+                                                <Button>
+                                                    Delete User Profile
+                                                </Button>
+                                            </Dialog.Trigger>
+                                            <Portal>
+                                                <Dialog.Backdrop />
+                                                <Dialog.Positioner>
+                                                    <Dialog.Content>
+                                                        <Dialog.Header>
+                                                            <Dialog.Title>Delete User Account?</Dialog.Title>
+                                                        </Dialog.Header>
+                                                        <Dialog.Body>
+                                                            <p>
+                                                                Are you sure you want to delete the current user account? This action cannot be undone. This will permanently delete the
+                                                                user account and remove user data from the systems.
+                                                            </p>
+                                                        </Dialog.Body>
+                                                        <Dialog.Footer>
+                                                            <Dialog.ActionTrigger asChild>
+                                                                <Button variant="outline">Cancel</Button>
+                                                            </Dialog.ActionTrigger>
+                                                            <Button colorPalette="red" onClick={() => deleteUser()}>Delete</Button>
+                                                        </Dialog.Footer>
+                                                        <Dialog.CloseTrigger asChild>
+                                                            <CloseButton size="sm" />
+                                                        </Dialog.CloseTrigger>
+                                                    </Dialog.Content>
+                                                </Dialog.Positioner>
+                                            </Portal>
+                                        </Dialog.Root>
+                                        )}
+                                    </Stack>
                                 </Stack>
                             </Box>
                         </Box>

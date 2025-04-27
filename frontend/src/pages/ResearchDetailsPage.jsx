@@ -4,6 +4,7 @@ import { useColorModeValue } from "../components/ui/color-mode";
 import { useState, useEffect } from "react"
 import { useLocation, useNavigate } from 'react-router-dom';
 import httpClient from "@/httpClient";
+import ConfigHelper from "@/components/configHelper";
 
 const ResearchDetailsPage = () => {
     const location = useLocation();
@@ -20,6 +21,7 @@ const ResearchDetailsPage = () => {
     const [currentComment, setCurrentComment] = useState("");
     const [newComment, setNewComment] = useState("");
     const [resultCommentList, setResultCommentList] = useState([]);
+    const LoggedUsername = ConfigHelper.getItem('username');
     const navigate = useNavigate();
 
 
@@ -392,63 +394,63 @@ const ResearchDetailsPage = () => {
                                                         </Stack>
                                                         {userName === authorName && (
                                                             <Stack gap="2" direction="row">
+                                                                {/* Only show the Edit button for the author */}
                                                                 <Dialog.Root size="cover" placement="center" motionPreset="slide-in-bottom">
                                                                     <Dialog.Trigger asChild>
                                                                         <IconButton
                                                                             aria-label="Call support"
                                                                             key="surface"
                                                                             variant="surface"
-                                                                            >
-                                                                            <LuPencilLine  />
+                                                                        >
+                                                                            <LuPencilLine />
                                                                         </IconButton>
                                                                     </Dialog.Trigger>
                                                                     <Portal>
                                                                         <Dialog.Backdrop />
                                                                         <Dialog.Positioner pr="24" pl="24">
-                                                                        <Dialog.Content>
-                                                                            <Dialog.Header>
-                                                                                <Dialog.Title>Update Research Discussion Details</Dialog.Title>
-                                                                            </Dialog.Header>
-                                                                            <Dialog.Body pb="4">
-                                                                                <Stack gap="4">
-                                                                                    <Field.Root required>
-                                                                                        <Field.Label>Title <Field.RequiredIndicator /></Field.Label>
-                                                                                        <Input value={researchTitle} onChange={(e) => setResearchTitle(e.target.value)} placeholder="Enter research title..."/>
-                                                                                    </Field.Root>
-                                                                                    <Field.Root required>
-                                                                                        <Field.Label>Description <Field.RequiredIndicator /></Field.Label>
-                                                                                        <InputGroup
-                                                                                            endElement={
-                                                                                                <Span color="fg.muted" textStyle="xs" position="relative" pt="180px">
-                                                                                                {researchDescription.length} / {1000}
-                                                                                                </Span>
-                                                                                            }
+                                                                            <Dialog.Content>
+                                                                                <Dialog.Header>
+                                                                                    <Dialog.Title>Update Research Discussion Details</Dialog.Title>
+                                                                                </Dialog.Header>
+                                                                                <Dialog.Body pb="4">
+                                                                                    <Stack gap="4">
+                                                                                        <Field.Root required>
+                                                                                            <Field.Label>Title <Field.RequiredIndicator /></Field.Label>
+                                                                                            <Input value={researchTitle} onChange={(e) => setResearchTitle(e.target.value)} placeholder="Enter research title..." />
+                                                                                        </Field.Root>
+                                                                                        <Field.Root required>
+                                                                                            <Field.Label>Description <Field.RequiredIndicator /></Field.Label>
+                                                                                            <InputGroup
+                                                                                                endElement={
+                                                                                                    <Span color="fg.muted" textStyle="xs" position="relative" pt="180px">
+                                                                                                        {researchDescription.length} / {1000}
+                                                                                                    </Span>
+                                                                                                }
                                                                                             >
-                                                                                            <Textarea value={researchDescription} maxLength={1000} onChange={(e) => setResearchDesc(e.target.value)} placeholder="Enter research description..."  height="200px" variant="outline"/>
-                                                                                        </InputGroup>
-                                                                                    
-                                                                                    </Field.Root>
-                                                                                    <Field.Root required>
-                                                                                        <Field.Label>Tags <Field.RequiredIndicator /></Field.Label>
-                                                                                        <Input value={researchTags} onChange={(e) => setResearchTags(e.target.value)} placeholder="Enter research topics..."/>
-                                                                                        <Field.HelperText fontSize="2xs">You can add as many tag as much. You need to add '#' in front of each tag and seperate them with ','. Also, you should not use space character in your tags. Tags that does not satisfy these requirements will not be added to the tag list.</Field.HelperText>
-                                                                                        <Field.HelperText fontSize="2xs">e.g., #chatGPT, #GenerativeAI, #LLMSs, #bigData, #workingWithKubernates</Field.HelperText>
-                                                                                        
-                                                                                    </Field.Root>
-                                                                                </Stack>
-                                                                            </Dialog.Body>
-                                                                            <Dialog.Footer>
-                                                                                <Dialog.ActionTrigger asChild>
-                                                                                    <Button variant="outline" >Cancel</Button>
-                                                                                </Dialog.ActionTrigger>
-                                                                                <Dialog.ActionTrigger asChild>
-                                                                                    <Button bg="blue.800"  onClick={() => updateTopic()} disabled={researchTitle.trim() === "" || researchDescription.trim() === ""}>Update</Button>
-                                                                                </Dialog.ActionTrigger>
-                                                                            </Dialog.Footer>
-                                                                        </Dialog.Content>
+                                                                                                <Textarea value={researchDescription} maxLength={1000} onChange={(e) => setResearchDesc(e.target.value)} placeholder="Enter research description..." height="200px" variant="outline" />
+                                                                                            </InputGroup>
+                                                                                        </Field.Root>
+                                                                                        <Field.Root required>
+                                                                                            <Field.Label>Tags <Field.RequiredIndicator /></Field.Label>
+                                                                                            <Input value={researchTags} onChange={(e) => setResearchTags(e.target.value)} placeholder="Enter research topics..." />
+                                                                                            <Field.HelperText fontSize="2xs">You can add as many tags as you want. You need to add '#' in front of each tag and separate them with ','. Also, you should not use space characters in your tags. Tags that do not satisfy these requirements will not be added to the tag list.</Field.HelperText>
+                                                                                            <Field.HelperText fontSize="2xs">e.g., #chatGPT, #GenerativeAI, #LLMSs, #bigData, #workingWithKubernetes</Field.HelperText>
+                                                                                        </Field.Root>
+                                                                                    </Stack>
+                                                                                </Dialog.Body>
+                                                                                <Dialog.Footer>
+                                                                                    <Dialog.ActionTrigger asChild>
+                                                                                        <Button variant="outline">Cancel</Button>
+                                                                                    </Dialog.ActionTrigger>
+                                                                                    <Dialog.ActionTrigger asChild>
+                                                                                        <Button bg="blue.800" onClick={() => updateTopic()} disabled={researchTitle.trim() === "" || researchDescription.trim() === ""}>Update</Button>
+                                                                                    </Dialog.ActionTrigger>
+                                                                                </Dialog.Footer>
+                                                                            </Dialog.Content>
                                                                         </Dialog.Positioner>
                                                                     </Portal>
                                                                 </Dialog.Root>
+                                                                {/* Only show the Delete button for both the author and admin */}
                                                                 <Dialog.Root role="alertdialog" placement="center">
                                                                     <Dialog.Trigger asChild>
                                                                         <IconButton
@@ -456,8 +458,8 @@ const ResearchDetailsPage = () => {
                                                                             key="surface"
                                                                             colorPalette="red"
                                                                             variant="surface"
-                                                                            >
-                                                                            <LuTrash  />
+                                                                        >
+                                                                            <LuTrash />
                                                                         </IconButton>
                                                                     </Dialog.Trigger>
                                                                     <Portal>
@@ -469,8 +471,8 @@ const ResearchDetailsPage = () => {
                                                                                 </Dialog.Header>
                                                                                 <Dialog.Body>
                                                                                     <p>
-                                                                                        Are you sure you want to delete your Research? This action cannot be undone. This will permanently delete your
-                                                                                        research, comments, connection graph from our systems.
+                                                                                        Are you sure you want to delete your research? This action cannot be undone. This will permanently delete your
+                                                                                        research, comments, and connection graph from our system.
                                                                                     </p>
                                                                                 </Dialog.Body>
                                                                                 <Dialog.Footer>
@@ -488,6 +490,50 @@ const ResearchDetailsPage = () => {
                                                                 </Dialog.Root>
                                                             </Stack>
                                                         )}
+
+                                                        {/* Only show the Delete button for the admin */}
+                                                        {LoggedUsername === "admin" && (
+                                                            <Stack gap="2" direction="row">
+                                                                <Dialog.Root role="alertdialog" placement="center">
+                                                                    <Dialog.Trigger asChild>
+                                                                        <IconButton
+                                                                            aria-label="Call support"
+                                                                            key="surface"
+                                                                            colorPalette="red"
+                                                                            variant="surface"
+                                                                        >
+                                                                            <LuTrash />
+                                                                        </IconButton>
+                                                                    </Dialog.Trigger>
+                                                                    <Portal>
+                                                                        <Dialog.Backdrop />
+                                                                        <Dialog.Positioner>
+                                                                            <Dialog.Content>
+                                                                                <Dialog.Header>
+                                                                                    <Dialog.Title>Delete Research?</Dialog.Title>
+                                                                                </Dialog.Header>
+                                                                                <Dialog.Body>
+                                                                                    <p>
+                                                                                        Are you sure you want to delete this research? This action cannot be undone. This will permanently delete your
+                                                                                        research, comments, and connection graph from the system.
+                                                                                    </p>
+                                                                                </Dialog.Body>
+                                                                                <Dialog.Footer>
+                                                                                    <Dialog.ActionTrigger asChild>
+                                                                                        <Button variant="outline">Cancel</Button>
+                                                                                    </Dialog.ActionTrigger>
+                                                                                    <Button colorPalette="red" onClick={() => deleteResearch()}>Delete</Button>
+                                                                                </Dialog.Footer>
+                                                                                <Dialog.CloseTrigger asChild>
+                                                                                    <CloseButton size="sm" />
+                                                                                </Dialog.CloseTrigger>
+                                                                            </Dialog.Content>
+                                                                        </Dialog.Positioner>
+                                                                    </Portal>
+                                                                </Dialog.Root>
+                                                            </Stack>
+                                                        )}
+
                                                     </Flex>
                                                 </Stack>
                                             </Flex>
@@ -564,16 +610,18 @@ const ResearchDetailsPage = () => {
                                                                             </Text>
                                                                             <Text textStyle="2xs">Created At: {comment.created_at}</Text>
                                                                         </Stack>
+                                                                        {/* Show both buttons for the comment author */}
                                                                         {userName === comment.author_name && (
                                                                             <Stack gap="2" direction="row">
+                                                                                {/* Edit button for the comment author */}
                                                                                 <Dialog.Root placement="center" motionPreset="slide-in-bottom">
                                                                                     <Dialog.Trigger asChild>
                                                                                         <IconButton
-                                                                                            aria-label="Call support"
+                                                                                            aria-label="Edit comment"
                                                                                             key="surface"
                                                                                             variant="surface"
-                                                                                            >
-                                                                                            <LuPencilLine  />
+                                                                                        >
+                                                                                            <LuPencilLine />
                                                                                         </IconButton>
                                                                                     </Dialog.Trigger>
                                                                                     <Portal>
@@ -581,17 +629,23 @@ const ResearchDetailsPage = () => {
                                                                                         <Dialog.Positioner pr="24" pl="24">
                                                                                             <Dialog.Content>
                                                                                                 <Dialog.Header>
-                                                                                                    <Dialog.Title>Update comment</Dialog.Title>
+                                                                                                    <Dialog.Title>Update Comment</Dialog.Title>
                                                                                                 </Dialog.Header>
                                                                                                 <Dialog.Body pb="4">
                                                                                                     <Stack gap="4">
                                                                                                         <Field.Root>
                                                                                                             <Field.Label>Your comment</Field.Label>
                                                                                                             <InputGroup>
-                                                                                                                <Textarea value={currentComment} placeholder="write your comment here..." maxLength={1000} onChange={(e) => setCurrentComment(e.target.value)} height="300px" variant="outline" />
+                                                                                                                <Textarea
+                                                                                                                    value={currentComment}
+                                                                                                                    placeholder="Write your comment here..."
+                                                                                                                    maxLength={1000}
+                                                                                                                    onChange={(e) => setCurrentComment(e.target.value)}
+                                                                                                                    height="300px"
+                                                                                                                    variant="outline"
+                                                                                                                />
                                                                                                             </InputGroup>
                                                                                                         </Field.Root>
-                                                                                                        
                                                                                                     </Stack>
                                                                                                 </Dialog.Body>
                                                                                                 <Dialog.Footer>
@@ -599,22 +653,32 @@ const ResearchDetailsPage = () => {
                                                                                                         <Button variant="outline">Cancel</Button>
                                                                                                     </Dialog.ActionTrigger>
                                                                                                     <Dialog.ActionTrigger asChild>
-                                                                                                        <Button bg="blue.500" color="white" _hover={{ bg: "blue.600" }}  alignContent="center" onClick={() => updateCurrentComment(comment.id)}>Update</Button>
+                                                                                                        <Button
+                                                                                                            bg="blue.500"
+                                                                                                            color="white"
+                                                                                                            _hover={{ bg: "blue.600" }}
+                                                                                                            onClick={() => updateCurrentComment(comment.id)}
+                                                                                                            alignContent="center"
+                                                                                                        >
+                                                                                                            Update
+                                                                                                        </Button>
                                                                                                     </Dialog.ActionTrigger>
                                                                                                 </Dialog.Footer>
                                                                                             </Dialog.Content>
                                                                                         </Dialog.Positioner>
                                                                                     </Portal>
                                                                                 </Dialog.Root>
+
+                                                                                {/* Delete button for both the author and admin */}
                                                                                 <Dialog.Root role="alertdialog" placement="center">
                                                                                     <Dialog.Trigger asChild>
                                                                                         <IconButton
-                                                                                            aria-label="Call support"
+                                                                                            aria-label="Delete comment"
                                                                                             key="surface"
                                                                                             colorPalette="red"
                                                                                             variant="surface"
-                                                                                            >
-                                                                                            <LuTrash  />
+                                                                                        >
+                                                                                            <LuTrash />
                                                                                         </IconButton>
                                                                                     </Dialog.Trigger>
                                                                                     <Portal>
@@ -626,8 +690,7 @@ const ResearchDetailsPage = () => {
                                                                                                 </Dialog.Header>
                                                                                                 <Dialog.Body>
                                                                                                     <p>
-                                                                                                        Are you sure you want to delete your Comment? This action cannot be undone. This will permanently delete your
-                                                                                                        comment from our systems.
+                                                                                                        Are you sure you want to delete your comment? This action cannot be undone. It will permanently delete your comment from our systems.
                                                                                                     </p>
                                                                                                 </Dialog.Body>
                                                                                                 <Dialog.Footer>
@@ -645,6 +708,49 @@ const ResearchDetailsPage = () => {
                                                                                 </Dialog.Root>
                                                                             </Stack>
                                                                         )}
+
+                                                                        {/* Show only the delete button for the admin */}
+                                                                        {LoggedUsername === "admin" && (
+                                                                            <Stack gap="2" direction="row">
+                                                                                <Dialog.Root role="alertdialog" placement="center">
+                                                                                    <Dialog.Trigger asChild>
+                                                                                        <IconButton
+                                                                                            aria-label="Delete comment"
+                                                                                            key="surface"
+                                                                                            colorPalette="red"
+                                                                                            variant="surface"
+                                                                                        >
+                                                                                            <LuTrash />
+                                                                                        </IconButton>
+                                                                                    </Dialog.Trigger>
+                                                                                    <Portal>
+                                                                                        <Dialog.Backdrop />
+                                                                                        <Dialog.Positioner>
+                                                                                            <Dialog.Content>
+                                                                                                <Dialog.Header>
+                                                                                                    <Dialog.Title>Delete Comment?</Dialog.Title>
+                                                                                                </Dialog.Header>
+                                                                                                <Dialog.Body>
+                                                                                                    <p>
+                                                                                                        Are you sure you want to delete this comment? This action cannot be undone. It will permanently delete this comment from our systems.
+                                                                                                    </p>
+                                                                                                </Dialog.Body>
+                                                                                                <Dialog.Footer>
+                                                                                                    <Dialog.ActionTrigger asChild>
+                                                                                                        <Button variant="outline">Cancel</Button>
+                                                                                                    </Dialog.ActionTrigger>
+                                                                                                    <Button colorPalette="red" onClick={() => deleteCurrentComment(comment.id)}>Delete</Button>
+                                                                                                </Dialog.Footer>
+                                                                                                <Dialog.CloseTrigger asChild>
+                                                                                                    <CloseButton size="sm" />
+                                                                                                </Dialog.CloseTrigger>
+                                                                                            </Dialog.Content>
+                                                                                        </Dialog.Positioner>
+                                                                                    </Portal>
+                                                                                </Dialog.Root>
+                                                                            </Stack>
+                                                                        )}
+
                                                                     </Flex>
                                                                     
                                                                 </Stack>
