@@ -48,8 +48,11 @@ const Navbar = () => {
 					<Flex gap={3} alignItems={"center"}>
 						{!hideButtons && (
 						<>
+							<Link to="/searchUser">
+								<Button>Search User profile</Button>
+							</Link>
 							<Link to="/profile">
-							<Button>Profile</Button>
+								<Button>Profile</Button>
 							</Link>
 							<Button onClick={() => Logout()}>Logout</Button>
 						</>

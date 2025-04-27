@@ -1,19 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState, useCallback} from 'react';
 import httpClient from "@/httpClient";
-import { Box, Button, Container, Flex, Text, Stack, For, Card, Grid, Dialog, Portal, Field, Input, Textarea, InputGroup, Span, Group, Link } from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Text, Stack, For, Card, Grid, Dialog, Portal, Field, Input, Textarea, InputGroup, Span, Group } from "@chakra-ui/react";
 import { useColorModeValue } from "../components/ui/color-mode";
 
 const HomePage = () => {
-
-    const contributions = [
-        { title: "Tips for Writing Efficient SQL Queries in Kotlin", author: "esranzm", date: "2025-03-19 10:10:34" },
-        { title: "What Makes Kotlin a Great Choice for Android Development?", author: "esranzm", date: "2025-03-19 10:20:51" },
-        { title: "The Role of Machine Learning in Modern Software Engineering", author: "velicelik", date: "2025-03-19 10:35:18" },
-        { title: "Unit Testing Best Practices in Kotlin", author: "esranzm", date: "2025-03-19 10:50:03" },
-        { title: "How to Build Scalable Web Applications with Kotlin and Spring Boot", author: "user34352", date: "2025-03-19 11:05:25" },
-        { title: "Understanding the Basics of Kotlin Coroutines", author: "esranzm", date: "2025-03-19 11:20:42" }
-        ];
       
     const tags = [
       { title: "Kotlin", color: "orange.400" },
@@ -30,9 +21,8 @@ const HomePage = () => {
     const [topicDescription, setTopicDescription] = useState("");
     const [topicTags, setTopicTags] = useState("");
     const [searchedTopic, setSearchedTopic] = useState("");
-    const [searchedHotTopic, setSearchedHotTopic] = useState("");
     const [resultTopicList, setResultTopicList] = useState([]);
-    const [resultHotTopicList, setResultHotTopicList] = useState(contributions);
+    const [resultPopularTopicList, setResultPopularTopicList] = useState([]);
     const navigate = useNavigate();
 
     const MAX_CHARACTERS = 1000
@@ -40,7 +30,6 @@ const HomePage = () => {
     const fetchData = useCallback(async () => {
       try {
         const resp = await httpClient.get("//localhost:5000/api/users/@me");
-        //console.log(resp.status)
         if (resp.status != 200) {
           window.location.href = "/login";
         }
@@ -59,12 +48,26 @@ const HomePage = () => {
       try { 
         const resp = await httpClient.get("//localhost:5000/api/researches");
         
-    
         if (resp.status != 200) {
             alert("An error occurred. Please try again.");
         }
         else if(resp.status === 200) {
-          setResultTopicList(resp.data)
+          const researches = resp.data;
+
+          const researchesWithComments = await Promise.all(
+            researches.map(async (item) => {
+              const commentCount = await fetchCommentsCount(item.id); 
+              return { ...item, commentCount };
+            })
+          );
+
+          // Sort researches by comment count descending
+          const top5Researches = researchesWithComments
+            .sort((a, b) => b.commentCount - a.commentCount)
+            .slice(0, 5);
+
+          setResultTopicList(resp.data);
+          setResultPopularTopicList(top5Researches);
         }
         
       } catch (e) {
@@ -76,6 +79,20 @@ const HomePage = () => {
         }
       }
     }, []);
+
+    const fetchCommentsCount = async (topicId) => {
+      try {
+        const resp = await httpClient.get(`//localhost:5000/api/comments/research/${topicId}`);
+        if (resp.status === 200) {
+          return resp.data.length;
+        } else {
+          return 0;
+        }
+      } catch (e) {
+        console.log(e);
+        return 0;
+      }
+    };
 
     useEffect(() => {
       const fetchAllData = async () => {
@@ -128,19 +145,6 @@ const HomePage = () => {
 
     };
 
-    const searchHotResearchTopic = () => {
-      if (searchedHotTopic === "") 
-      { 
-        setResultHotTopicList(contributions);
-        return;
-      }
-      const filterHotTopicBySearch = contributions.filter((item) => 
-        item.title.toLowerCase().includes(searchedHotTopic.toLowerCase()) || 
-        item.author.toLowerCase().includes(searchedHotTopic.toLowerCase())
-      )
-      setResultHotTopicList(filterHotTopicBySearch);
-    }
-
     const searchResearchTopic = () => {
       if (searchedTopic === "") 
         { 
@@ -153,7 +157,9 @@ const HomePage = () => {
           item.authorName.toLowerCase().includes(searchedTopic.toLowerCase())
           );
           setResultTopicList(filterBySearch);
-    }
+    };
+
+    
 
     const directToDetails = (topicId) => {
       // Navigate to another page with the topicId and filtered tags
@@ -279,9 +285,6 @@ const HomePage = () => {
                                 height="30px" 
                                 onClick={() => directToDetails(topic.id)}
                               >View</Button>
-
-                            
-                              
                             </Card.Footer>
                           </Flex>
                         </Card.Body>
@@ -293,17 +296,11 @@ const HomePage = () => {
             </Box>
 
             <Box width="36%" display="flex" flexDirection="column">
-              <Text fontSize="lg" fontWeight="bold" mb={2}>Hot Topics 🔥</Text> 
+              <Text fontSize="lg" fontWeight="bold" mb={2}>Popular Topics ⭐</Text> 
               <Box pt="4" px="4" pb="4" borderRadius={8} borderColor={useColorModeValue("gray.800", "gray.300")}
                 border="2px solid" display="flex" flexDirection="column" overflowY="auto" maxHeight="530px">
                 <Stack gap="3" direction="column" overflowY="auto" pr="4">
-                  <Group attached w="full" maxW="2md">
-                    <Input flex="1" placeholder="Search Hot Topic" onChange={(e) => setSearchedHotTopic(e.target.value)}/>
-                    <Button bg={useColorModeValue("black.500", "gray.400")} onClick={() => searchHotResearchTopic()}>
-                      Search
-                    </Button>
-                  </Group>
-                  <For each={resultHotTopicList}>
+                  <For each={resultPopularTopicList}>
                     {(contribution) => (
                       <Card.Root size="sm" width="100%" key={contribution.title} pt="0.5" height="150px" bg={useColorModeValue("gray.300", "gray.500")}>
                         <Card.Body gap="2" pl="8" pt="5">
@@ -311,12 +308,18 @@ const HomePage = () => {
                             <Stack gap="5" direction="column" flex="1">
                               <Card.Title mb="-0.5" textStyle="sm">{contribution.title}</Card.Title>
                               <Stack gap="-0.5" direction="column">
-                                <Text textStyle="2xs">Author: {contribution.author}</Text>
-                                <Text textStyle="2xs">Created At: {contribution.date}</Text>
+                                <Text textStyle="2xs">Author: {contribution.authorName}</Text>
+                                <Text textStyle="2xs">Created At: {contribution.createdAt}</Text>
                               </Stack>
                             </Stack>
                             <Card.Footer>
-                              <Button textStyle="xs" width="65px" height="30px">View</Button>
+                              <Button 
+                                  textStyle="xs" 
+                                  width="65px" 
+                                  height="30px" 
+                                  onClick={() => directToDetails(contribution.id)}
+                                >View
+                              </Button>
                             </Card.Footer>
                           </Flex>
                         </Card.Body>
