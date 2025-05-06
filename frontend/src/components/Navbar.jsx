@@ -2,12 +2,15 @@ import { Box, Button, Container, Flex, Text } from "@chakra-ui/react";
 import { useColorModeValue } from "./ui/color-mode";
 import { Link, useLocation } from 'react-router-dom';
 import httpClient from "@/httpClient";
+import ConfigHelper from "./configHelper";
 
 const Navbar = () => {
 
 	const location = useLocation();
 	// Check if the current route is one of the routes to hide buttons
 	const hideButtons = ['/login', '/signUp', '/'].includes(location.pathname);
+	const username = ConfigHelper.getItem('username');
+
 	const Logout = async () => {
  
 		try {
@@ -51,8 +54,8 @@ const Navbar = () => {
 							<Link to="/searchUser">
 								<Button>Search User profile</Button>
 							</Link>
-							<Link to="/profile">
-								<Button>Profile</Button>
+							<Link to={username === "admin" ? "/adminPage" : "/profile"}>
+								<Button>{username === "admin" ? "Admin Panel" : "Profile"}</Button>
 							</Link>
 							<Button onClick={() => Logout()}>Logout</Button>
 						</>
