@@ -1,6 +1,6 @@
 from app import app, db
 from flask import request, jsonify, session
-from models import Research, User, Comment
+from models import Research, User, Comment, CurrentUser
 from flask_bcrypt import Bcrypt
 from flask_session import Session
 from datetime import datetime
@@ -50,10 +50,10 @@ def get_current_user_research(id):
 @app.route("/api/researches/create", methods=["POST"])
 def create_research():
     try:
-        author_id=session.get("user_id")
-        print(author_id)
-        if author_id:
-            user = User.query.filter_by(id=author_id).first()
+        author= CurrentUser.query.first() #session.get("user_id")
+        #print(author_id)
+        if author:
+            user = User.query.filter_by(id=author.user_id).first()
             if user:
                 username=user.username
             else:
@@ -105,7 +105,13 @@ def delete_research(id):
 
         if research_comments:
             try:
-                response = requests.delete(f"http://localhost:5000/api/comments/research/{id}")
+                ##response = requests.delete(f"http://44.211.252.187:5000/api/comments/research/{id}")
+                research_comments_resp = Comment.query.filter_by(research_id=id).order_by(Comment.created_at.desc()).all()
+                if not research_comments_resp:
+                    return jsonify({"error": "No comments found with that research_id"}), 400
+
+                for comment in research_comments_resp:
+                    db.session.delete(comment)
             except requests.exceptions.RequestException as e:
                 app.logger.error(f"Failed to delete comments for research {id}: {e}")
         

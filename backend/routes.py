@@ -1,8 +1,9 @@
 from app import app, db
 from flask import request, jsonify, session
-from models import User, Research
+from models import User, Research, CurrentUser
 from flask_bcrypt import Bcrypt
 from flask_session import Session
+from datetime import datetime
 
 bcrypt = Bcrypt(app)
 server_session = Session(app)
@@ -35,14 +36,14 @@ def get_searched_user(id):
 # get current user
 @app.route("/api/users/@me", methods=["GET"])
 def get_current_user():
-    user_id = session.get("user_id")
+    currentUser = CurrentUser.query.first() #session.get("user_id")
 
-    if not user_id:
+    if not currentUser:
         return jsonify({
             "error": "Unauthorized"
         }), 401
     
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.filter_by(id=currentUser.user_id).first()
 
     return jsonify({
         "id": user.id,
@@ -109,7 +110,7 @@ def register_user():
         db.session.add(new_user)
         db.session.commit()
 
-        session["user_id"] = new_user.id
+        #session["user_id"] = new_user.id
 
         return jsonify(
             {
@@ -140,7 +141,13 @@ def login_user():
             "error": "Unauthorized, Password is incorrect!"
         }), 401
     
-    session["user_id"] = user.id
+    #session["user_id"] = user.id
+    logged_user = CurrentUser(
+        user_id=user.id,
+        logged_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    )
+    db.session.add(logged_user)
+    db.session.commit()
 
     return jsonify(
             {
@@ -153,21 +160,34 @@ def login_user():
 #logout
 @app.route("/api/users/logout", methods=["POST"])
 def logout():
-    if "user_id" in session:
-        session.pop("user_id")
-        return jsonify({"msg": "Logout successful."}), 200
-    else:
-        return jsonify({"msg": "No user logged in."}), 200
+    try:
+        currentUser = CurrentUser.query.first() #session.get("user_id")
+
+        if not currentUser:
+            return jsonify({"msg": "No user logged in."}), 200
+        
+        db.session.delete(currentUser)
+        db.session.commit()
+        return jsonify({"msg": "Logout successful."}),200
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 
 #delete user
 @app.route("/api/users/<string:id>", methods=["DELETE"])
 def delete_user(id):
     try:
+        logged_user = CurrentUser.query.get(user_id=id)
         user = User.query.get(id)
         if user is None:
             return jsonify({"error": "User not found"}), 400
         
         db.session.delete(user)
+        db.session.commit()
+
+        db.session.delete(logged_user)
         db.session.commit()
         return jsonify({"msg":"User deleted successfully"}),200
     

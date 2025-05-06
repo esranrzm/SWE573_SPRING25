@@ -34,6 +34,18 @@ class User(db.Model):
             "imgUrl": self.image_url
         }
     
+class CurrentUser(db.Model):
+    __tablename__ = "Currentuser"
+    id = db.Column(db.String(32), primary_key=True, unique=True, default=get_uuid)
+    user_id = db.Column(db.String(32), nullable=False)
+    logged_at = db.Column(db.String(30), nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "userId": self.user_id,
+            "loggedAt": self.created_at
+        }
 
 class Research(db.Model):
     __tableName__ = "Researches"
