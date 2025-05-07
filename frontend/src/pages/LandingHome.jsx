@@ -8,7 +8,7 @@ import ConfigHelper from "@/components/configHelper";
 function LandingHome(){
 
     const [user, setUser] = useState(null);
-    const setUrlPrefix = ConfigHelper.setItem("url",'http://18.215.115.230:5000');
+    const setUrlPrefix = ConfigHelper.setItem("url",'https://swe573-spring25-backend.onrender.com');
     const getUrlPrefix = ConfigHelper.getItem("url");
 
     const logoutUser = async () => {
