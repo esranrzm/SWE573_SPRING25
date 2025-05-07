@@ -11,6 +11,7 @@ const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [visible, setVisible] = useState(false);
+    const navigate = useNavigate();
     const getUrlPrefix = ConfigHelper.getItem("url");
     const navigate = useNavigate();
     const logInUser = async () => {

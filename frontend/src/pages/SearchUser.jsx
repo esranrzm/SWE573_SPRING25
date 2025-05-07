@@ -26,7 +26,7 @@ const SearchUserPage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-            window.location.href = "/";
+              navigate("/");
             } else {
             alert("An error occurred. Please try again.");
             }

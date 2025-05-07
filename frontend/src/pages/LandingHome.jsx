@@ -1,5 +1,5 @@
 import { Button } from "@chakra-ui/react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import "../components/pageDesigns/LandingHome.css";
 import React, {useState, useEffect} from 'react';
 import httpClient from '@/httpClient';
@@ -10,10 +10,12 @@ function LandingHome(){
     const [user, setUser] = useState(null);
     const setUrlPrefix = ConfigHelper.setItem("url",'https://swe573-spring25-backend.onrender.com');
     const getUrlPrefix = ConfigHelper.getItem("url");
+    const navigate = useNavigate();
+
 
     const logoutUser = async () => {
       const resp = await httpClient.post(`${getUrlPrefix}/api/users/logout`);
-      window.location.href = "/"
+      navigate("/");
     }
 
     useEffect(() => {

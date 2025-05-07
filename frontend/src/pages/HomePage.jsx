@@ -33,13 +33,13 @@ const HomePage = () => {
       try {
         const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
         if (resp.status != 200) {
-          window.location.href = "/login";
+          navigate("/login");
         }
         
       } catch (e) {
         console.log(e);
         if (e.response?.status === 401) {
-          window.location.href = "/";
+          navigate("/");
         } else {
           alert("An error occurred. Please try again.");
         }
@@ -75,7 +75,7 @@ const HomePage = () => {
       } catch (e) {
         console.log(e);
         if (e.response?.status === 401) {
-          window.location.href = "/";
+          navigate("/");
         } else {
           alert("No research found");
         }
@@ -135,7 +135,7 @@ const HomePage = () => {
         } catch (e) {
           console.log(e);
           if (e.response?.status === 401) {
-            window.location.href = "/";
+            navigate("/");
           } 
           else if (e.response?.status === 404) {
             alert("User Not found in db. Please contact support!");
