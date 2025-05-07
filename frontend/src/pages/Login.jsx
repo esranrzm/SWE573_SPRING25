@@ -20,7 +20,7 @@ const Login = () => {
                 password,
             });
             ConfigHelper.setItem('username', username);
-            window.location.href = "/home"
+            navigate("/home");
         }
         catch (e) {
             console.log(e)
