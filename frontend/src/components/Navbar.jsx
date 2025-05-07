@@ -10,11 +10,12 @@ const Navbar = () => {
 	// Check if the current route is one of the routes to hide buttons
 	const hideButtons = ['/login', '/signUp', '/'].includes(location.pathname);
 	const username = ConfigHelper.getItem('username');
+	const getUrlPrefix = ConfigHelper.getItem("url");
 
 	const Logout = async () => {
  
 		try {
-			const resp = await httpClient.post("//localhost:5000/api/users/logout", {});
+			const resp = await httpClient.post(`${getUrlPrefix}/api/users/logout`, {});
 			
 			window.location.href = "/login"
 		}

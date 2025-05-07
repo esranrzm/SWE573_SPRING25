@@ -22,12 +22,13 @@ const ResearchDetailsPage = () => {
     const [newComment, setNewComment] = useState("");
     const [resultCommentList, setResultCommentList] = useState([]);
     const LoggedUsername = ConfigHelper.getItem('username');
+    const getUrlPrefix = ConfigHelper.getItem("url");
     const navigate = useNavigate();
 
 
     const fetchUserId = async () => {
         try {
-            const resp = await httpClient.get("//localhost:5000/api/users/@me");
+            const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
             setUserName(resp.data.username)
             setLoggedUserId(resp.data.id)
         
@@ -47,7 +48,7 @@ const ResearchDetailsPage = () => {
 
     const fetchResearchData = async () => {
         try {
-            const resp = await httpClient.get(`//localhost:5000/api/researches/${researchId}`);
+            const resp = await httpClient.get(`${getUrlPrefix}/api/researches/${researchId}`);
             if (resp.status === 200) {
                 setAuthorName(resp.data.authorName)
                 setAuthorId(resp.data.authorId)
@@ -77,7 +78,7 @@ const ResearchDetailsPage = () => {
 
     const fecthResearchComments = async () => {
         try {
-            const resp = await httpClient.get(`//localhost:5000/api/comments/research/${researchId}`);
+            const resp = await httpClient.get(`${getUrlPrefix}/api/comments/research/${researchId}`);
             if (resp.status === 200) {
                 setResultCommentList(resp.data);
 
@@ -113,7 +114,7 @@ const ResearchDetailsPage = () => {
                 alert("Title and description cannot be empty.");
                 return;
             }
-            const resp = await httpClient.put(`//localhost:5000/api/researches/${researchId}`, {
+            const resp = await httpClient.put(`${getUrlPrefix}/api/researches/${researchId}`, {
                 "title": researchTitle,
                 "description": researchDescription,
                 "tags":processTags(researchTags)
@@ -145,7 +146,7 @@ const ResearchDetailsPage = () => {
 
     const deleteResearch = async () => {
         try {
-            const resp = await httpClient.delete(`//localhost:5000/api/researches/${researchId}`);
+            const resp = await httpClient.delete(`${getUrlPrefix}/api/researches/${researchId}`);
 
             if (resp.status === 200) {
                 alert("Research deleted successfully.");
@@ -173,7 +174,7 @@ const ResearchDetailsPage = () => {
                 return;
             }
 
-            const resp = await httpClient.put(`//localhost:5000/api/comments/${commentId}`, {
+            const resp = await httpClient.put(`${getUrlPrefix}/api/comments/${commentId}`, {
                 "comment": currentComment
             });
 
@@ -199,7 +200,7 @@ const ResearchDetailsPage = () => {
 
     const deleteCurrentComment = async (commentId) => {
         try {
-            const resp = await httpClient.delete(`//localhost:5000/api/comments/${commentId}`);
+            const resp = await httpClient.delete(`${getUrlPrefix}/api/comments/${commentId}`);
 
             if (resp.status === 200) {
                 alert("Comment deleted successfully.");
@@ -226,7 +227,7 @@ const ResearchDetailsPage = () => {
                 alert("You cannot leave the comment area empty!");
             } 
             else {
-                const resp = await httpClient.post("//localhost:5000/api/comments/create", {
+                const resp = await httpClient.post(`${getUrlPrefix}/api/comments/create`, {
                     "researchId": researchId,
                     "comment": newComment
                 }) ;

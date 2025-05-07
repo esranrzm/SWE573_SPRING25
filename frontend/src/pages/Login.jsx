@@ -11,11 +11,11 @@ const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [visible, setVisible] = useState(false);
-
+    const getUrlPrefix = ConfigHelper.getItem("url");
     const logInUser = async () => {
 
         try {
-            const resp = await httpClient.post("//localhost:5000/api/users/login", {
+            const resp = await httpClient.post(`${getUrlPrefix}/api/users/login`, {
                 username,
                 password,
             });

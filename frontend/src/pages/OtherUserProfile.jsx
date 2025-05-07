@@ -22,6 +22,7 @@ const OtherUserProfilePage = () => {
     const [resultContributionsList, setResultContributionsList] = useState([]);
     const [resultTopicList, setResultTopicList] = useState([]);
     const LoggedUsername = ConfigHelper.getItem('username');
+    const getUrlPrefix = ConfigHelper.getItem("url");
     const navigate = useNavigate();
 
     const currentUser = [
@@ -34,7 +35,7 @@ const OtherUserProfilePage = () => {
     
     const fetchData = async () => {
         try {
-            const resp = await httpClient.get(`//localhost:5000/api/users/getSearchedUser/${userId}`);
+            const resp = await httpClient.get(`${getUrlPrefix}/api/users/getSearchedUser/${userId}`);
             setUsername(resp.data.username)
             setName(resp.data.name)
             setSurname(resp.data.surname)
@@ -61,7 +62,7 @@ const OtherUserProfilePage = () => {
     const fetchResearchData = async () => {
         try {
             console.log(userId);  
-            const resp = await httpClient.get(`//localhost:5000/api/researches/user/${userId}`);
+            const resp = await httpClient.get(`${getUrlPrefix}/api/researches/user/${userId}`);
             
         
             if (resp.status != 200) {
@@ -84,7 +85,7 @@ const OtherUserProfilePage = () => {
     const fetchCommentsResearchData = async () => {
         try {
             console.log(userId);  
-            const resp = await httpClient.get(`//localhost:5000/api/comments/user/${userId}`);
+            const resp = await httpClient.get(`${getUrlPrefix}/api/comments/user/${userId}`);
             
         
             if (resp.status != 200) {
@@ -144,7 +145,7 @@ const OtherUserProfilePage = () => {
 
     const deleteUser = async () => {
         try {
-            const resp = await httpClient.delete(`//localhost:5000/api/users/${userId}`, {});
+            const resp = await httpClient.delete(`${getUrlPrefix}/api/users/${userId}`, {});
 
             if (resp.status === 200) {
                 navigate(-1);

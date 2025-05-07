@@ -4,6 +4,7 @@ import { useColorModeValue } from "../components/ui/color-mode";
 import { useRef, useState, useEffect } from "react"
 import { useNavigate } from 'react-router-dom';
 import httpClient from "@/httpClient";
+import ConfigHelper from "@/components/configHelper";
 
 const AdminPage = () => {
 
@@ -12,11 +13,12 @@ const AdminPage = () => {
     const [searchedUser, setSearchedUser] = useState("");
     const [resultTopicList, setResultTopicList] = useState([]);
     const [resultUserList, setResultUserList] = useState([]);
+    const getUrlPrefix = ConfigHelper.getItem("url");
     const navigate = useNavigate();
 
     const fetchResearchData = async () => {
     try {
-        const resp = await httpClient.get(`//localhost:5000/api/researches`);
+        const resp = await httpClient.get(`${getUrlPrefix}/api/researches`);
 
         if (resp.status != 200) {
             alert("An error occurred. Please try again.");
@@ -37,7 +39,7 @@ const AdminPage = () => {
 
     const fetchUserData = async () => {
     try {
-        const resp = await httpClient.get(`//localhost:5000/api/users`);
+        const resp = await httpClient.get(`${getUrlPrefix}/api/users`);
 
         if (resp.status != 200) {
             alert("An error occurred. Please try again.");

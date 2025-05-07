@@ -3,20 +3,23 @@ import { Link } from 'react-router-dom';
 import "../components/pageDesigns/LandingHome.css";
 import React, {useState, useEffect} from 'react';
 import httpClient from '@/httpClient';
+import ConfigHelper from "@/components/configHelper";
 
 function LandingHome(){
 
     const [user, setUser] = useState(null);
+    const setUrlPrefix = ConfigHelper.setItem("url",'//13.218.207.96:5000');
+    const getUrlPrefix = ConfigHelper.getItem("url");
 
     const logoutUser = async () => {
-      const resp = await httpClient.post("//localhost:5000/api/users/logout");
+      const resp = await httpClient.post(`${getUrlPrefix}/api/users/logout`);
       window.location.href = "/"
     }
 
     useEffect(() => {
         (async () => {
             try {
-                const resp = await httpClient.get("//localhost:5000/api/users/@me");
+                const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
 
                 setUser(resp.data);
             }
