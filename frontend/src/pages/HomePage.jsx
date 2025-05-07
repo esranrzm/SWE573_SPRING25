@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback} from 'react';
 import httpClient from "@/httpClient";
 import { Box, Button, Container, Flex, Text, Stack, For, Card, Grid, Dialog, Portal, Field, Input, Textarea, InputGroup, Span, Group } from "@chakra-ui/react";
 import { useColorModeValue } from "../components/ui/color-mode";
+import ConfigHelper from '@/components/configHelper';
 
 const HomePage = () => {
       
@@ -23,13 +24,14 @@ const HomePage = () => {
     const [searchedTopic, setSearchedTopic] = useState("");
     const [resultTopicList, setResultTopicList] = useState([]);
     const [resultPopularTopicList, setResultPopularTopicList] = useState([]);
+    const getUrlPrefix = ConfigHelper.getItem("url");
     const navigate = useNavigate();
 
     const MAX_CHARACTERS = 1000
 
     const fetchData = useCallback(async () => {
       try {
-        const resp = await httpClient.get("//localhost:5000/api/users/@me");
+        const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
         if (resp.status != 200) {
           window.location.href = "/login";
         }
@@ -46,7 +48,7 @@ const HomePage = () => {
 
     const fetchResearchData = useCallback(async () => {
       try { 
-        const resp = await httpClient.get("//localhost:5000/api/researches");
+        const resp = await httpClient.get(`${getUrlPrefix}/api/researches`);
         
         if (resp.status != 200) {
             alert("An error occurred. Please try again.");
@@ -82,7 +84,7 @@ const HomePage = () => {
 
     const fetchCommentsCount = async (topicId) => {
       try {
-        const resp = await httpClient.get(`//localhost:5000/api/comments/research/${topicId}`);
+        const resp = await httpClient.get(`${getUrlPrefix}/api/comments/research/${topicId}`);
         if (resp.status === 200) {
           return resp.data.length;
         } else {
@@ -115,7 +117,7 @@ const HomePage = () => {
 
         try { 
           setTopicTags(processTags(topicTags));
-          const resp = await httpClient.post("//localhost:5000/api/researches/create", {
+          const resp = await httpClient.post(`${getUrlPrefix}/api/researches/create`, {
               "title": topicTitle,
               "description": topicDescription,
               "tags": topicTags

@@ -4,6 +4,7 @@ import { useColorModeValue } from "../components/ui/color-mode";
 import { useRef, useState, useEffect } from "react"
 import { useNavigate } from 'react-router-dom';
 import httpClient from "@/httpClient";
+import ConfigHelper from "@/components/configHelper";
 
 const ProfilePage = () => {
 
@@ -23,6 +24,7 @@ const ProfilePage = () => {
     const [userId, setUserId] = useState("");
     const [bio, setBio] = useState("");
     const navigate = useNavigate();
+    const getUrlPrefix = ConfigHelper.getItem("url");
 
     const [isOpen, setIsOpen] = useState(false);
     const usernameRef = useRef(null); // Create a ref for the input
@@ -37,7 +39,7 @@ const ProfilePage = () => {
 
     const fetchData = async () => {
         try {
-          const resp = await httpClient.get("//localhost:5000/api/users/@me");
+          const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
           setUsername(resp.data.username)
           setName(resp.data.name)
           setSurname(resp.data.surname)
@@ -65,7 +67,7 @@ const ProfilePage = () => {
       const fetchResearchData = async () => {
         try {
           console.log(userId);  
-          const resp = await httpClient.get(`//localhost:5000/api/researches/user/${userId}`);
+          const resp = await httpClient.get(`${getUrlPrefix}/api/researches/user/${userId}`);
           
       
           if (resp.status != 200) {
@@ -88,7 +90,7 @@ const ProfilePage = () => {
       const fetchCommentsResearchData = async () => {
         try {
           console.log(userId);  
-          const resp = await httpClient.get(`//localhost:5000/api/comments/user/${userId}`);
+          const resp = await httpClient.get(`${getUrlPrefix}/api/comments/user/${userId}`);
           
       
           if (resp.status != 200) {
@@ -124,7 +126,7 @@ const ProfilePage = () => {
     const updateBioValues = async () => { 
         setIsOpen(false);
         try {
-            const resp = await httpClient.put(`//localhost:5000/api/users/${userId}`, {
+            const resp = await httpClient.put(`${getUrlPrefix}/api/users/${userId}`, {
                 "bio": bio
             });
 
@@ -179,7 +181,7 @@ const ProfilePage = () => {
     const updateValues = async () => {
             setIsOpen(false);
             try {
-                const resp = await httpClient.put(`//localhost:5000/api/users/${userId}`, {
+                const resp = await httpClient.put(`${getUrlPrefix}/api/users/${userId}`, {
                     username,
                     name,
                     surname,
@@ -214,7 +216,7 @@ const ProfilePage = () => {
     const Logout = async () => {
     
             try {
-                const resp = await httpClient.post("//localhost:5000/api/users/logout", {});
+                const resp = await httpClient.post(`${getUrlPrefix}/api/users/logout`, {});
                 
                 if(resp.status === 200) {
                     deleteAccount();
@@ -234,7 +236,7 @@ const ProfilePage = () => {
     
     const deleteAccount = async () => {
         try {
-            const resp = await httpClient.delete(`//localhost:5000/api/users/${userId}`, {
+            const resp = await httpClient.delete(`${getUrlPrefix}/api/users/${userId}`, {
 
             });
 
@@ -261,7 +263,7 @@ const ProfilePage = () => {
 
     const updatePassword = async () => {
         try {
-            const resp = await httpClient.put(`//localhost:5000/api/users/updatePass/${userId}`, {
+            const resp = await httpClient.put(`${getUrlPrefix}/api/users/updatePass/${userId}`, {
                 "oldPassword": oldPassword,
                 "newPassword": newPassword
             });

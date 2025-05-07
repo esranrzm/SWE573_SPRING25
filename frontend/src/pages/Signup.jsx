@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import "../components/pageDesigns/SignUp.css";
 import httpClient from "@/httpClient";
+import ConfigHelper from "@/components/configHelper";
 
 const genders = [
   { label: "Female", value: "Female" },
@@ -25,6 +26,7 @@ const SignUp = () => {
   const [occupation, setOccupation] = useState("");
   const [gender, setGender] = useState("Female");
   const [visible, setVisible] = useState(true);
+  const getUrlPrefix = ConfigHelper.getItem("url");
 
   let selectedGender = "Female";
 
@@ -69,7 +71,7 @@ const SignUp = () => {
     }
     else {
       try {
-        const resp = await httpClient.post("//localhost:5000/api/users/register", {
+        const resp = await httpClient.post(`${getUrlPrefix}/api/users/register`, {
             name,
             surname,
             username,

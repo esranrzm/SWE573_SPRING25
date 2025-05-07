@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback} from 'react';
 import httpClient from "@/httpClient";
 import { Box, Button, Container, Flex, Text, Stack, For, Card, Grid, Input,  Group, Avatar } from "@chakra-ui/react";
 import { useColorModeValue } from "../components/ui/color-mode";
+import ConfigHelper from '@/components/configHelper';
 
 const SearchUserPage = () => {
 
@@ -11,10 +12,11 @@ const SearchUserPage = () => {
     const [loggedUserId, setUserId] = useState("");
     const [resultUserList, setResultUserList] = useState([]);
     const navigate = useNavigate();
+    const getUrlPrefix = ConfigHelper.getItem("url");
 
     const fetchData = async () => {
         try {
-            const resp = await httpClient.get("//localhost:5000/api/users/@me");
+            const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
             setUserId(resp.data.id);
             console.log(loggedUserId);
             if (resp.status != 200) {
@@ -33,7 +35,7 @@ const SearchUserPage = () => {
 
     const fetchUsers = useCallback(async () => {
       try {
-        const resp = await httpClient.get("//localhost:5000/api/users");
+        const resp = await httpClient.get(`${getUrlPrefix}/api/users`);
         const updatedUserList = resp.data.filter(user => user.username !== "admin");
         if (updatedUserList.length === 0) {
             alert("No user found");
