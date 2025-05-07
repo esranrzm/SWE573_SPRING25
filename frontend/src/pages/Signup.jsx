@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Button, ColorPickerArea, ColorPickerAreaBackground, Flex, HStack, RadioGroup } from "@chakra-ui/react";
+import { Button, Flex, HStack, RadioGroup } from "@chakra-ui/react";
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form"
@@ -27,6 +27,7 @@ const SignUp = () => {
   const [gender, setGender] = useState("Female");
   const [visible, setVisible] = useState(true);
   const getUrlPrefix = ConfigHelper.getItem("url");
+  const navigate = useNavigate();
 
   let selectedGender = "Female";
 
@@ -81,7 +82,7 @@ const SignUp = () => {
             occupation
         });
         
-        window.location.href = "/login"
+        navigate("/login");
       }
       catch (e) {
           console.log(e)

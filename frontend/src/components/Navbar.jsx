@@ -11,13 +11,13 @@ const Navbar = () => {
 	const hideButtons = ['/login', '/signUp', '/'].includes(location.pathname);
 	const username = ConfigHelper.getItem('username');
 	const getUrlPrefix = ConfigHelper.getItem("url");
+	const navigate = useNavigate();
 
 	const Logout = async () => {
  
 		try {
 			const resp = await httpClient.post(`${getUrlPrefix}/api/users/logout`, {});
-			
-			window.location.href = "/login"
+			navigate("/login");
 		}
 		catch (e) {
 			console.log(e)

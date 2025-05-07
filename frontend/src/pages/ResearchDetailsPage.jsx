@@ -39,7 +39,7 @@ const ResearchDetailsPage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-            window.location.href = "/";
+                navigate("/");
             } else {
             alert("An error occurred. Please try again.");
             }
@@ -69,7 +69,7 @@ const ResearchDetailsPage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-            window.location.href = "/";
+                navigate("/");
             } else {
             alert("An error occurred. Please try again.");
             }
@@ -91,7 +91,7 @@ const ResearchDetailsPage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-                window.location.href = "/";
+                navigate("/");
             } 
             else if (e.response?.status === 404) {
                 alert("There are no comments for this research");
@@ -137,7 +137,7 @@ const ResearchDetailsPage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-            window.location.href = "/";
+                navigate("/");
             } else {
             alert("An error occurred. Please try again.");
             }
@@ -160,7 +160,7 @@ const ResearchDetailsPage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-                window.location.href = "/";
+                navigate("/");
             } else {
             alert("An error occurred. Please try again.");
             }
@@ -190,7 +190,7 @@ const ResearchDetailsPage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-                window.location.href = "/";
+                navigate("/");
             } else {
             alert("An error occurred. Please try again.");
             }
@@ -214,7 +214,7 @@ const ResearchDetailsPage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-                window.location.href = "/";
+                navigate("/");
             } else {
             alert("An error occurred. Please try again.");
             }
@@ -245,7 +245,7 @@ const ResearchDetailsPage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-                window.location.href = "/";
+                navigate("/");
             } else {
                 alert("An error occurred. Please try again.");
             }

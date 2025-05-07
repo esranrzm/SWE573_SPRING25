@@ -11,6 +11,7 @@ const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [visible, setVisible] = useState(false);
+    const navigate = useNavigate();
     const getUrlPrefix = ConfigHelper.getItem("url");
     const logInUser = async () => {
 
@@ -20,7 +21,7 @@ const Login = () => {
                 password,
             });
             ConfigHelper.setItem('username', username);
-            window.location.href = "/home"
+            navigate("/home");
         }
         catch (e) {
             console.log(e)
