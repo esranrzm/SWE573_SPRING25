@@ -13,7 +13,6 @@ const Login = () => {
     const [visible, setVisible] = useState(false);
     const navigate = useNavigate();
     const getUrlPrefix = ConfigHelper.getItem("url");
-    const navigate = useNavigate();
     const logInUser = async () => {
 
         try {
