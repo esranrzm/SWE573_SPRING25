@@ -1,6 +1,6 @@
 import { Box, Button, Container, Flex, Text } from "@chakra-ui/react";
 import { useColorModeValue } from "./ui/color-mode";
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import httpClient from "@/httpClient";
 import ConfigHelper from "./configHelper";
 

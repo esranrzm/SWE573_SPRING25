@@ -20,7 +20,7 @@ const ProfilePage = () => {
     const [occupation, setOccupation] = useState("test test");
     const [oldPassword, setOldPassword] = useState("test123");
     const [newPassword, setNewPassword] = useState("test123");
-    const [image, setImage] = useState("https://avatar.iran.liara.run/public/girl?username=esra%20nur");
+    const [image, setImage] = useState("");
     const [userId, setUserId] = useState("");
     const [bio, setBio] = useState("");
     const navigate = useNavigate();
