@@ -70,7 +70,8 @@ def create_research():
 
 
         new_research = Research(
-                            author_id=session.get("user_id"),
+            #session.get("user_id"),
+                            author_id=author.user_id,
                             author_name=authorName,
                             title=title,
                             description=description,

@@ -70,21 +70,26 @@ def get_current_user_comments(id):
             return jsonify({"error": "No comments found for this author"}), 404
 
         research_ids = [comment.research_id for comment in user_commented_researches]
+        comment_ids = [comment.id for comment in user_commented_researches]
         research_details = []
 
-        for research_id in research_ids:
+        for index, research_id in enumerate(research_ids):
             try:
                 ##response = requests.get(f"http://44.211.252.187:5000/api/researches/{research_id}")
                 research_resp = Research.query.filter_by(id=research_id).first()
-                research = jsonify({
+                if not research_resp:
+                    continue  # skip if research not found
+                research = {
                     "id": research_resp.id,
+                    "commentId": comment_ids[index],
                     "authorId": research_resp.author_id,
                     "authorName": research_resp.author_name,
                     "title": research_resp.title,
                     "description": research_resp.description,
                     "tags": research_resp.tags,
                     "createdAt": research_resp.created_at
-                })
+                }
+
                 research_details.append(research)
             except requests.exceptions.RequestException as e:
                 app.logger.error(f"Failed to fetch research {research_id}: {e}")
@@ -119,7 +124,8 @@ def create_comment():
 
 
         new_comment = Comment(
-                            author_id=session.get("user_id"),
+            #session.get("user_id"),
+                            author_id=author.user_id, 
                             author_name=authorName,
                             research_id=researchId,
                             comment=comment,
