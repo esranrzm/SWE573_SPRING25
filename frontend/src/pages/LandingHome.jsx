@@ -8,7 +8,7 @@ import ConfigHelper from "@/components/configHelper";
 function LandingHome(){
 
     const [user, setUser] = useState(null);
-    const setUrlPrefix = ConfigHelper.setItem("url",'//13.218.207.96:5000');
+    const setUrlPrefix = ConfigHelper.setItem("url",'//18.215.115.230:5000');
     const getUrlPrefix = ConfigHelper.getItem("url");
 
     const logoutUser = async () => {
