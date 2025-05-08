@@ -87,4 +87,48 @@ class Comment(db.Model):
             "createdAt": self.created_at
         }
 
+class Node(db.Model):
+    __tablename__ = "Nodes"
+    id = db.Column(db.String(32), primary_key=True, unique=True, default=get_uuid)
+    user_id = db.Column(db.String(32), nullable=False)
+    research_id = db.Column(db.String(32), nullable=False)
+    username = db.Column(db.String(100), nullable=False)
+    label = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.String(30), nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "userId": self.user_id,
+            "researchId": self.research_id,
+            "username": self.username,
+            "label": self.label,
+            "createdAt": self.created_at
+        }
     
+class Edge(db.Model):
+    __tablename__ = "Edges"
+    id = db.Column(db.String(32), primary_key=True, unique=True, default=get_uuid)
+    user_id = db.Column(db.String(32), nullable=False)
+    research_id = db.Column(db.String(32), nullable=False)
+    username = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(70), nullable=False)
+    source = db.Column(db.String(50), nullable=False)
+    source_id = db.Column(db.String(32), nullable=False)
+    target = db.Column(db.String(50), nullable=False)
+    target_id = db.Column(db.String(32), nullable=False)
+    created_at = db.Column(db.String(30), nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "userId": self.user_id,
+            "researchId": self.research_id,
+            "username": self.username,
+            "description": self.description,
+            "source": self.source,
+            "sourceId": self.source_id,
+            "target": self.target,
+            "targetId": self.target_id,
+            "createdAt": self.created_at
+        }
