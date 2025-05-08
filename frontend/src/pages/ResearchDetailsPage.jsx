@@ -94,7 +94,7 @@ const ResearchDetailsPage = () => {
                 navigate("/");
             } 
             else if (e.response?.status === 404) {
-                alert("There are no comments for this research");
+                //alert("There are no comments for this research");
             }
             else {
                 alert("An error occurred. Please try again.");
@@ -261,6 +261,10 @@ const ResearchDetailsPage = () => {
           }
     }
 
+    const directToGraphPage = () => {
+        navigate("/graphPage");
+    }
+
     useEffect(() => {
         fetchUserId();
         fetchResearchData();
@@ -309,6 +313,7 @@ const ResearchDetailsPage = () => {
                                     alignSelf="center"
                                     mt={10}
                                     bg="blue.800"
+                                    onClick={() => directToGraphPage()}
                                 >
                                     + Add new node to the graph
                                 </Button>
