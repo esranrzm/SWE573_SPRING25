@@ -103,6 +103,8 @@ def add_node():
         researchId = data.get("researchId")
         username = data.get("username")
         label = data.get("label")
+        connectionNode = data.get("connectionNode")
+        connectionDesc = data.get("connectionDesc")
 
         new_node = Node(
             user_id=userId,
@@ -114,6 +116,23 @@ def add_node():
 
         db.session.add(new_node)
         db.session.commit()
+
+        connection = Node.query.filter_by(label=connectionNode).first()
+
+        if connection:
+            new_edge = Edge(
+                user_id=userId,
+                research_id=researchId,
+                username=username,
+                source=label,
+                source_id=new_node.id,
+                target=connectionNode,
+                target_id=connection.id,
+                description=connectionDesc,
+                created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            )
+            db.session.add(new_edge)
+            db.session.commit()
 
         return jsonify(
             {

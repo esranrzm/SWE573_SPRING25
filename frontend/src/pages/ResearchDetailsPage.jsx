@@ -262,7 +262,7 @@ const ResearchDetailsPage = () => {
     }
 
     const directToGraphPage = () => {
-        navigate("/graphPage");
+        navigate(`/graphPage?param=${researchId}&userId=${loggedUserId}`);
     }
 
     useEffect(() => {

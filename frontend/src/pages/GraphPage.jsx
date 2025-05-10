@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback  } from 'react';
 import { Box, Button, Flex, Stack, Text, Dialog, Portal, Field, Input, Spinner, Select, createListCollection, InputGroup, Span, Textarea} from '@chakra-ui/react';
 import { useColorModeValue } from "../components/ui/color-mode";
 import ReactFlow, { Background } from 'reactflow';
 import 'reactflow/dist/style.css';
+import httpClient from "@/httpClient";
+import ConfigHelper from "@/components/configHelper";
 import dagre from 'dagre';
 
 const nodeWidth = 172;
@@ -18,6 +20,8 @@ function getLayoutedGraph(nodes, edges, direction = 'TB') {
     });
   
     edges.forEach((edge) => {
+      console.log(edge.source);
+      console.log(edge.target);
       dagreGraph.setEdge(edge.source, edge.target);
     });
   
@@ -80,107 +84,153 @@ function getLayoutedGraph(nodes, edges, direction = 'TB') {
 
 function GraphPage() {
   const [nodes, setNodes] = useState([]);
+  const [nodeList, setNodeList] = useState([]);
   const [edges, setEdges] = useState([]);
-  const [selectedNode, setSelectedNode] = useState("")
-  const [selectedNodeLabel, setNodeLabel] = useState("")
+  const [edgeList, setEdgeList] = useState([]);
+  const [selectedNode, setSelectedNode] = useState("");
+  const [selectedNodeLabel, setNodeLabel] = useState("");
   const [selectedNodeEdgeDesc, setEdgeDescription] = useState("")
   const [selectedDeleteNode, setSelectedDeleteNode] = useState("")
   const [selectedEdge, setSelectedEdge] = useState("")
   const [myNode, setMyNode] = useState("")
   const [otherNode, setOtherNode] = useState("")
   const [newConnectionDesc, setNewConnectionDesc] = useState("")
+  const [stateNodes, setStateNodes] = useState([]);
+  const [stateEdges, setStateEdges] = useState([]);
+  const [stateUserNodes, setStateUserNodes] = useState([]);
+  const queryParams = new URLSearchParams(location.search);
+  const researchId = queryParams.get('param');
+  const userId = queryParams.get('userId');
+  const LoggedUsername = ConfigHelper.getItem('username');
+  const getUrlPrefix = ConfigHelper.getItem("url");
+  const [collectionDeleteNode, setCollectionDeleteNode] = useState(createListCollection({
+    items: [], // Initialize with an empty array
+    itemToString: (node) => node.label,
+    itemToValue: (node) => node.label,
+  }));
+  const [collection, setNewCollectionNodes] = useState(createListCollection({
+    items: [], // Initialize with an empty array
+    itemToString: (node) => node.label,
+    itemToValue: (node) => node.label,
+  }));
+  const [collectionEdges, setNewCollectionEdges] = useState(createListCollection({
+    items: [], // Initialize with an empty array
+    itemToString: (edge) => edge.source + " -> " + edge.target,
+    itemToValue: (edge) => edge.description,
+  }));
+  
+  const fetchNodeData = useCallback(async () => {
+    try {
+      const resp = await httpClient.get(`${getUrlPrefix}/api/nodes/research/${researchId}`);
+      if (resp.status === 200) {
+        const nodes = resp.data;
+        const currentUserNode = resp.data.filter(node => node.user_id === userId);
+        setNodeList(nodes);
 
-  const edgesFromDB = [
-    { id: 'e1', source: 'node1', target: 'node2', description: 'Link 1 → 2' },
-    { id: 'e2', source: 'node2', target: 'node3', description: 'Link 2 → 3' },
-    { id: 'e3', source: 'node2', target: 'node4', description: 'Link 2 → 4' },
-    { id: 'e4', source: 'node3', target: 'node5', description: 'Link 3 → 5' },
-    { id: 'e5', source: 'node4', target: 'node6', description: 'Link 4 → 6' },
-    { id: 'e6', source: 'node6', target: 'node7', description: 'Link 6 → 7' },
-  ];
+      
+        const { edges = [], currentUserEdges = [] } = await fetchEdgeData() || {};
 
-  const allNodeIds = [
-    'node1', 'node2', 'node3', 'node4', 'node5', 'node6', 'node7',
-    'standalone1', 'standalone2', 'standalone3','standalone5',
-  ];
+        const graphData = await generateGraphData(nodes, edges);
+        if (graphData) {
+          setNodes(graphData.nodes);
+          setEdges(graphData.edges);
+          console.log(graphData.edges);
 
-  const spinnerData = [
-    { id: 'e1', name: 'esra' },
-    { id: 'e2', name: 'scarf'},
-    { id: 'e3', name: 'emily' },
-    { id: 'e4', name: 'car' },
-    { id: 'e5', name: '1989'},
-    { id: 'e6', name: 'Taylor' },
-  ];
+        }
 
-  const spinnerEdgeData = [
-    { id: 'e1', source: 'esra', target: 'emily' },
-    { id: 'e2', source: 'scarf', target: 'esra'},
-    { id: 'e3', source: 'emily', target: 'car' },
-    { id: 'e4', source: 'car', target: 'Taylor' },
-    { id: 'e5', source: '1989', target: 'scarf'},
-    { id: 'e6', source: 'Taylor', target: 'emily' },
-  ];
+        const newCollectionDeleteNode = createListCollection({
+          items: currentUserNode ?? [],
+          itemToString: (node) => node.label,
+          itemToValue: (node) => node.label,
+        });
+        setCollectionDeleteNode(newCollectionDeleteNode);
 
-  const state = { value: spinnerData }
-  const stateEdge = { value: spinnerEdgeData }
+        const otherUserNodes = nodes.filter(node => node.user_id != userId)
+        const newCollection = createListCollection({
+          items: nodes ?? [],
+          itemToString: (node) => node.label,
+          itemToValue: (node) => node.label,
+        });
+        setNewCollectionNodes(newCollection);
 
-  const collection = useMemo(() => {
-    return createListCollection({
-      items: state.value ?? [],
-      itemToString: (node) => node.name,
-      itemToValue: (node) => node.name,
-    })
-  }, [state.value])
+        if (edges.length > 0 ) {
+          const newCollectionEdge = createListCollection({
+            items: edges ?? [],
+            itemToString: (edge) => edge.source + " -> " + edge.target,
+            itemToValue: (edge) => edge.description,
+          });
+          setNewCollectionEdges(newCollectionEdge);
+        }
+        
+      }
+      
+    } catch (e) {
+      console.log(e);
+      if (e.response?.status === 401) {
+        navigate("/");
+      } else {
+        //alert("An error occurred. Please try again.");
+      }
+    }
+  }, [userId, researchId]);
 
-  const collectionDeleteNode = useMemo(() => {
-    return createListCollection({
-      items: state.value ?? [],
-      itemToString: (node) => node.name,
-      itemToValue: (node) => node.name,
-    })
-  }, [state.value])
+  const fetchEdgeData = useCallback(async () => {
+    try {
+      const resp = await httpClient.get(`${getUrlPrefix}/api/edges/research/${researchId}`);
+      if (resp.status === 200) {
+        const edges = resp.data;
+        const currentUserEdges = resp.data.filter(edge => edge.user_id === userId);
+        setEdgeList(edges);
+        return { edges, currentUserEdges };
+      }
+      
+    } catch (e) {
+      console.log(e);
+      if (e.response?.status === 401) {
+        navigate("/");
+      } else {
+        //alert("An error occurred. Please try again.");
+      }
+    }
+    return null;
+  }, [userId, researchId]);
 
-  const collectionRemoveEdge = useMemo(() => {
-    return createListCollection({
-      items: stateEdge.value ?? [],
-      itemToString: (node) => node.source + " -> " + node.target,
-      itemToValue: (node) => node.source + " -> " + node.target,
-    })
-  }, [stateEdge.value])
-
-
-  useEffect(() => {
-    const generateGraphData = () => {
+  const generateGraphData = async (nodess, edgess) => {
+    if (nodess.length > 0) {
       const nodesMap = new Map();
 
-      allNodeIds.forEach((id) => {
-        nodesMap.set(id, {
-          id,
-          data: { label: id },
+      nodess.forEach((node) => {
+        nodesMap.set(node.id, {
+          id: String(node.id),
+          data: { label: node.label },
           position: { x: 0, y: 0 },
         });
       });
 
       const rawNodes = Array.from(nodesMap.values());
-
-      const graphEdges = edgesFromDB.map(({ id, source, target, description }) => ({
-        id,
-        source,
-        target,
-        label: description,
-        animated: true,
-        style: { stroke: '#888' },
-        labelStyle: { fill: '#000', fontWeight: 600 },
-      }));
+      const graphEdges = edgess.map(({ id, sourceId, targetId, description }) => ({
+          id,
+          source: String(sourceId),
+          target: String(targetId),
+          label: description,
+          animated: true,
+          style: { stroke: '#888' },
+          labelStyle: { fill: '#000', fontWeight: 600 },
+        }));
 
       return getLayoutedGraph(rawNodes, graphEdges);
-    };
+    }
+    
+  };
 
-    const { nodes, edges } = generateGraphData();
-    setNodes(nodes);
-    setEdges(edges);
-  }, []);
+  useEffect(() => {
+    fetchNodeData();
+    const fetchAllData = async () => {
+        await fetchNodeData();
+      };
+      fetchAllData();
+  }, [fetchNodeData]);
+
 
   const onNodeClick = (event, node) => {
     console.log("Node clicked:", node.id);
@@ -190,10 +240,40 @@ function GraphPage() {
   const applyNodeAddOperation = async () => { 
           if (selectedNodeLabel == "") {
             alert("Please enter node label!");
-          }else {
+          }
+          else {
             console.log(selectedNodeLabel);
             console.log(selectedNodeEdgeDesc);
-            console.log(selectedNode.value[0]);
+
+            try { 
+              const resp = await httpClient.post(`${getUrlPrefix}/api/nodes/add`, {
+                  "userId": userId,
+                  "researchId": researchId,
+                  "username": LoggedUsername,
+                  "label": selectedNodeLabel,
+                  "connectionNode": selectedNode?.value?.[0] || "",
+                  "connectionDesc": selectedNodeEdgeDesc.length > 0 ? selectedNodeEdgeDesc : ""
+              });
+              
+          
+              if(resp.status === 201) {
+                alert("Node created successfully");
+                fetchNodeData();
+                window.location.reload();
+              }
+              
+            } catch (e) {
+              console.log(e);
+              if (e.response?.status === 401) {
+                navigate("/");
+              } 
+              else if (e.response?.status === 404) {
+                alert("User Not found in db. Please contact support!");
+              }
+              else {
+                alert("No research found");
+              }
+            }
           }
       };
 
@@ -203,6 +283,31 @@ function GraphPage() {
       setSelectedDeleteNode("");
     }else {
       console.log(selectedDeleteNode.value[0]);
+      try { 
+        const selectedNodeDetails = nodeList.filter(node => node.label === selectedDeleteNode.value[0]);
+        const resp = await httpClient.delete(`${getUrlPrefix}/api/nodes/${selectedNodeDetails[0].id}`);
+        
+    
+        if(resp.status === 200) {
+          alert("Node deleted successfully");
+          fetchNodeData();
+          fetchEdgeData();
+          window.location.reload();
+          //cal getNodes again
+        }
+        
+      } catch (e) {
+        console.log(e);
+        if (e.response?.status === 401) {
+          navigate("/");
+        } 
+        else if (e.response?.status === 404) {
+          alert("Node Not found in db. Please contact support!");
+        }
+        else {
+          alert("No Node found");
+        }
+      }
     }
   };
 
@@ -211,7 +316,35 @@ function GraphPage() {
       alert("Please select connection to remove!");
       setSelectedEdge("");
     }else {
-      console.log(selectedEdge.value[0]);
+      console.log(selectedEdge.items[0]);
+      edgeList.forEach(edge => {
+          console.log(edge.source + " -> " + edge.target)
+      })
+      const selected = selectedEdge.items[0].id;
+      const selectedDeleteEdge = edgeList.filter(edge => edge.id === selected);
+
+      try { 
+        const resp = await httpClient.delete(`${getUrlPrefix}/api/edges/${selectedDeleteEdge[0].id}`);
+        
+        if(resp.status === 200) {
+          alert("Connection deleted successfully");
+          fetchEdgeData();
+          fetchEdgeData();
+          window.location.reload();
+        }
+        
+      } catch (e) {
+        console.log(e);
+        if (e.response?.status === 401) {
+          navigate("/");
+        } 
+        else if (e.response?.status === 404) {
+          alert("Connection Not found in db. Please contact support!");
+        }
+        else {
+          alert("No connection found");
+        }
+      }
     }
   };
 
@@ -224,9 +357,49 @@ function GraphPage() {
       alert("Please select another node to connect with you node!");
       setOtherNode("");
     }
+    else if (myNode.value?.[0] === otherNode.value?.[0]) {
+      alert("You cannot select same nodes for connection!");
+      setOtherNode("");
+      setMyNode("");
+      setEdgeDescription("");
+    }
     else {
       console.log(myNode.value[0]);
       console.log(otherNode.value[0]);
+      const selectedSourceNode = nodeList.filter(node => node.label === myNode.value[0]);
+      const selectedTargetNode = nodeList.filter(node => node.label === otherNode.value[0]);
+
+      try { 
+        const resp = await httpClient.post(`${getUrlPrefix}/api/edges/add`, {
+            "userId": userId,
+            "researchId": researchId,
+            "username": LoggedUsername,
+            "source": myNode.value[0],
+            "sourceId": selectedSourceNode[0].id,
+            "target": otherNode.value[0],
+            "targetId": selectedTargetNode[0].id,
+            "description": newConnectionDesc
+        });
+        
+    
+        if(resp.status === 201) {
+          alert("Connection created successfully");
+          fetchEdgeData();
+          window.location.reload();
+        }
+        
+      } catch (e) {
+        console.log(e);
+        if (e.response?.status === 401) {
+          navigate("/");
+        } 
+        else if (e.response?.status === 404) {
+          alert("User Not found in db. Please contact support!");
+        }
+        else {
+          alert("No research found");
+        }
+      }
     }
   };
 
@@ -280,7 +453,7 @@ function GraphPage() {
                                   <Select.Indicator />
                                 </Select.IndicatorGroup>
                                 <Select.IndicatorGroup>
-                                  {state.loading && (
+                                  {stateNodes.loading && (
                                     <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
                                   )}
                                   <Select.Indicator />
@@ -289,8 +462,8 @@ function GraphPage() {
                               <Select.Positioner>
                                   <Select.Content>
                                     {collection.items.map((node) => (
-                                      <Select.Item item={node} key={node.name}>
-                                        {node.name}
+                                      <Select.Item item={node} key={node.label}>
+                                        {node.label}
                                         <Select.ItemIndicator />
                                       </Select.Item>
                                     ))}
@@ -316,7 +489,9 @@ function GraphPage() {
                         <Dialog.ActionTrigger asChild>
                           <Button variant="outline">Cancel</Button>
                         </Dialog.ActionTrigger>
-                        <Button onClick={() => applyNodeAddOperation()}>Add</Button>
+                        <Dialog.ActionTrigger asChild>
+                          <Button onClick={() => applyNodeAddOperation()}>Add</Button>
+                        </Dialog.ActionTrigger>
                       </Dialog.Footer>
                     </Dialog.Content>
                   </Dialog.Positioner>
@@ -350,7 +525,7 @@ function GraphPage() {
                                   <Select.Indicator />
                                 </Select.IndicatorGroup>
                                 <Select.IndicatorGroup>
-                                  {state.loading && (
+                                  {stateUserNodes.loading && (
                                     <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
                                   )}
                                   <Select.Indicator />
@@ -359,8 +534,8 @@ function GraphPage() {
                               <Select.Positioner>
                                   <Select.Content>
                                     {collectionDeleteNode.items.map((node) => (
-                                      <Select.Item item={node} key={node.name}>
-                                        {node.name}
+                                      <Select.Item item={node} key={node.label}>
+                                        {node.label}
                                         <Select.ItemIndicator />
                                       </Select.Item>
                                     ))}
@@ -377,7 +552,9 @@ function GraphPage() {
                         <Dialog.ActionTrigger asChild>
                           <Button variant="outline">Cancel</Button>
                         </Dialog.ActionTrigger>
-                        <Button onClick={() => deleteNode()}>Delete</Button>
+                        <Dialog.ActionTrigger asChild>
+                            <Button onClick={() => deleteNode()}>Delete</Button>
+                        </Dialog.ActionTrigger>
                       </Dialog.Footer>
                     </Dialog.Content>
                   </Dialog.Positioner>
@@ -399,7 +576,7 @@ function GraphPage() {
                       <Dialog.Body pb="4">
                         <Stack gap="4">
                           <Field.Root>
-                            <Select.Root collection={collection} size="sm" width="320px" onValueChange={setMyNode}>
+                            <Select.Root collection={collectionDeleteNode} size="sm" width="320px" onValueChange={setMyNode}>
                               <Select.HiddenSelect />
                               <Field.Label>Please select your node</Field.Label>
                               <Select.Control>
@@ -411,7 +588,7 @@ function GraphPage() {
                                   <Select.Indicator />
                                 </Select.IndicatorGroup>
                                 <Select.IndicatorGroup>
-                                  {state.loading && (
+                                  {stateUserNodes.loading && (
                                     <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
                                   )}
                                   <Select.Indicator />
@@ -419,9 +596,9 @@ function GraphPage() {
                               </Select.Control>
                               <Select.Positioner>
                                   <Select.Content>
-                                    {collection.items.map((node) => (
-                                      <Select.Item item={node} key={node.name}>
-                                        {node.name}
+                                    {collectionDeleteNode.items.map((node) => (
+                                      <Select.Item item={node} key={node.label}>
+                                        {node.label}
                                         <Select.ItemIndicator />
                                       </Select.Item>
                                     ))}
@@ -442,7 +619,7 @@ function GraphPage() {
                                   <Select.Indicator />
                                 </Select.IndicatorGroup>
                                 <Select.IndicatorGroup>
-                                  {state.loading && (
+                                  {stateNodes.loading && (
                                     <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
                                   )}
                                   <Select.Indicator />
@@ -451,8 +628,8 @@ function GraphPage() {
                               <Select.Positioner>
                                   <Select.Content>
                                     {collection.items.map((node) => (
-                                      <Select.Item item={node} key={node.name}>
-                                        {node.name}
+                                      <Select.Item item={node} key={node.label}>
+                                        {node.label}
                                         <Select.ItemIndicator />
                                       </Select.Item>
                                     ))}
@@ -478,7 +655,9 @@ function GraphPage() {
                         <Dialog.ActionTrigger asChild>
                           <Button variant="outline" onClick={() => setNewConnectionDesc("")}>Cancel</Button>
                         </Dialog.ActionTrigger>
-                        <Button bg="blue.500" onClick={() => addNewConnection()}>Add Connection</Button>
+                        <Dialog.ActionTrigger asChild>
+                          <Button bg="blue.500" onClick={() => addNewConnection()}>Add Connection</Button>
+                        </Dialog.ActionTrigger>
                       </Dialog.Footer>
                     </Dialog.Content>
                   </Dialog.Positioner>
@@ -500,7 +679,7 @@ function GraphPage() {
                       <Dialog.Body pb="4">
                         <Stack gap="4">
                           <Field.Root>
-                            <Select.Root collection={collectionRemoveEdge} size="sm" width="320px" onValueChange={setSelectedEdge}>
+                            <Select.Root collection={collectionEdges} size="sm" width="320px" onValueChange={setSelectedEdge}>
                               <Select.HiddenSelect />
                               <Field.Label>Please select a connection to remove</Field.Label>
                               <Select.Control>
@@ -512,7 +691,7 @@ function GraphPage() {
                                   <Select.Indicator />
                                 </Select.IndicatorGroup>
                                 <Select.IndicatorGroup>
-                                  {stateEdge.loading && (
+                                  {stateEdges.loading && (
                                     <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
                                   )}
                                   <Select.Indicator />
@@ -520,9 +699,9 @@ function GraphPage() {
                               </Select.Control>
                               <Select.Positioner>
                                   <Select.Content>
-                                    {collectionRemoveEdge.items.map((node) => (
-                                      <Select.Item item={node} key={node.source + " -> " + node.target}>
-                                        {node.source + " -> " + node.target}
+                                    {collectionEdges.items.map((edge) => (
+                                      <Select.Item item={edge} key={edge.source + " -> " + edge.target}>
+                                        {edge.source + " -> " + edge.target}
                                         <Select.ItemIndicator />
                                       </Select.Item>
                                     ))}
@@ -536,7 +715,9 @@ function GraphPage() {
                         <Dialog.ActionTrigger asChild>
                           <Button variant="outline">Cancel</Button>
                         </Dialog.ActionTrigger>
-                        <Button onClick={() => removeConnection()}>Remove</Button>
+                        <Dialog.ActionTrigger asChild>
+                          <Button onClick={() => removeConnection()}>Remove</Button>
+                        </Dialog.ActionTrigger>
                       </Dialog.Footer>
                     </Dialog.Content>
                   </Dialog.Positioner>

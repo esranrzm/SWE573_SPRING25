@@ -364,7 +364,9 @@ const ProfilePage = () => {
                                                                 <Dialog.ActionTrigger asChild>
                                                                     <Button variant="outline">Cancel</Button>
                                                                 </Dialog.ActionTrigger>
-                                                                <Button colorPalette="red" onClick={() => Logout()}>Delete</Button>
+                                                                <Dialog.ActionTrigger asChild>
+                                                                    <Button colorPalette="red" onClick={() => Logout()}>Delete</Button>
+                                                                </Dialog.ActionTrigger>
                                                             </Dialog.Footer>
                                                             <Dialog.CloseTrigger asChild>
                                                                 <CloseButton size="sm" />
