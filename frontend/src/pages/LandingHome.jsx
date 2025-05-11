@@ -15,7 +15,7 @@ function LandingHome(){
 
     const logoutUser = async () => {
       const resp = await httpClient.post(`${getUrlPrefix}/api/users/logout`);
-      navigate("/");
+      navigate("/login");
     }
 
     useEffect(() => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback  } from 'react';
-import { Box, Button, Flex, Stack, Text, Dialog, Portal, Field, Input, Spinner, Select, createListCollection, InputGroup, Span, Textarea, CloseButton} from '@chakra-ui/react';
+import { Box, Button, Flex, Stack, Text, Dialog, Portal, Field, Select, createListCollection, InputGroup, Span, Textarea, CloseButton, Spinner, VStack, Container} from '@chakra-ui/react';
 import { useColorModeValue } from "../components/ui/color-mode";
 import ReactFlow, { Background } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -21,8 +21,6 @@ function getLayoutedGraph(nodes, edges, direction = 'TB') {
     });
   
     edges.forEach((edge) => {
-      console.log(edge.source);
-      console.log(edge.target);
       dagreGraph.setEdge(edge.source, edge.target);
     });
   
@@ -105,6 +103,8 @@ function GraphPage() {
   const userId = queryParams.get('userId');
   const LoggedUsername = ConfigHelper.getItem('username');
   const getUrlPrefix = ConfigHelper.getItem("url");
+  const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false)
 
   const [collectionDeleteNode, setCollectionDeleteNode] = useState(createListCollection({
     items: [], // Initialize with an empty array
@@ -147,8 +147,6 @@ function GraphPage() {
         if (graphData) {
           setNodes(graphData.nodes);
           setEdges(graphData.edges);
-          console.log(graphData.edges);
-
         }
 
         const newCollectionDeleteNode = createListCollection({
@@ -252,16 +250,18 @@ function GraphPage() {
   };
 
   useEffect(() => {
-    fetchNodeData();
     const fetchAllData = async () => {
+      setIsLoading(true);
         await fetchNodeData();
+        setIsLoading(false);
       };
-      fetchAllData();
+    fetchAllData();
   }, [fetchNodeData]);
 
 
   const onNodeClick = (event, node) => {
     console.log("Node clicked:", node.id);
+    setOpen(true);
   };
 
   const applyNodeAddOperation = async () => { 
@@ -453,397 +453,437 @@ function GraphPage() {
     }
   };
 
-
   return (
-    <Flex alignItems="flex-start" height="100%" pl="80px" pr="20px" flexDirection="row">
-      {/* Sidebar Section */}
-      <Box display="flex" flexDirection="column" width="280px" pr="50px" justifyContent="center" height="100vh" alignItems="center">
-        <Box 
-          pt="4" pl="4" pr="4" pb="4"
-          alignItems="center"
-          borderRadius={8} 
-          bg={useColorModeValue("gray.100", "gray.500")} 
-          borderColor={useColorModeValue("gray.800", "gray.300")} 
-          border="1px solid"
-          display="flex" 
-          flexDirection="column" 
-          mb="4"
-        >
-          <Stack gap="1" direction="column">
-            <Stack gap="8" alignItems="center">
-              {/* ADD NODE */}
-              <Dialog.Root>
-                <Dialog.Trigger asChild>
-                  <Button bg="green.600">Add New Node</Button>
-                </Dialog.Trigger>
-                <Portal>
-                  <Dialog.Backdrop />
-                  <Dialog.Positioner>
-                    <Dialog.Content>
-                      <Dialog.Header>
-                        <Dialog.Title>Add new node to the graph</Dialog.Title>
-                      </Dialog.Header>
-                      <Dialog.Body pb="4">
-                        <Stack gap="4">
-                          <Field.Root required>
-                            <Field.Label>Node Label*</Field.Label>
-                            <Input placeholder="Label" onChange={(e) => setNodeLabel(e.target.value)}/>
-                          </Field.Root>
-                          <Field.Root>
-                            <Field.Label>Select a node if you want to create a connection</Field.Label>
-                            <Select.Root collection={collection} size="sm" width="320px" onValueChange={setSelectedNode}>
-                              <Select.HiddenSelect />
-                              <Select.Label>Select Node</Select.Label>
-                              <Select.Control>
-                                <Select.Trigger>
-                                  <Select.ValueText placeholder="Select node" />
-                                </Select.Trigger>
-                                <Select.IndicatorGroup>
-                                  <Select.ClearTrigger />
-                                  <Select.Indicator />
-                                </Select.IndicatorGroup>
-                                <Select.IndicatorGroup>
-                                  {stateNodes.loading && (
-                                    <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
-                                  )}
-                                  <Select.Indicator />
-                                </Select.IndicatorGroup>
-                              </Select.Control>
-                              <Select.Positioner>
-                                  <Select.Content>
-                                    {collection.items.map((node) => (
-                                      <Select.Item item={node} key={node.label}>
-                                        {node.label}
-                                        <Select.ItemIndicator />
-                                      </Select.Item>
-                                    ))}
-                                  </Select.Content>
-                                </Select.Positioner>
-                            </Select.Root>
-                          </Field.Root>
-                          <Field.Root>
-                            <Field.Label>Please specify the decsription of the connection you added</Field.Label>
-                            <InputGroup
-                              endElement={
-                                  <Span color="fg.muted" textStyle="2xs" position="relative" pt="60px">
-                                  {selectedNodeEdgeDesc.length} / {60}
-                                  </Span>
-                              }
-                          >
-                              <Textarea value={selectedNodeEdgeDesc} placeholder="Enter connection description" maxLength={60} onChange={(e) => setEdgeDescription(e.target.value)} height="40px" variant="outline" />
-                          </InputGroup>
-                          </Field.Root>
-                        </Stack>
-                      </Dialog.Body>
-                      <Dialog.Footer>
-                        <Dialog.ActionTrigger asChild>
-                          <Button variant="outline">Cancel</Button>
-                        </Dialog.ActionTrigger>
-                        <Dialog.ActionTrigger asChild>
-                          <Button onClick={() => applyNodeAddOperation()}>Add</Button>
-                        </Dialog.ActionTrigger>
-                      </Dialog.Footer>
-                    </Dialog.Content>
-                  </Dialog.Positioner>
-                </Portal>
-              </Dialog.Root>
+    <Container maxW="100%">
+      {isLoading ? (
+      <VStack colorPalette="teal" pt="80px">
+        <Spinner size="xl" thickness="4px" speed="0.65s" color="blue.800" />
+        <Text color="blue.800">Loading...</Text>
+      </VStack>) : 
+      (
+        <Flex alignItems="flex-start" height="100%" pl="80px" pr="20px" flexDirection="row">
+          {/* Sidebar Section */}
+          <Box display="flex" flexDirection="column" width="200px" pr="40px" justifyContent="center" height="100vh" alignItems="center">
+            <Box 
+              pt="4" pl="4" pr="4" pb="4"
+              alignItems="center"
+              borderRadius={8} 
+              bg={useColorModeValue("gray.100", "gray.500")} 
+              borderColor={useColorModeValue("gray.800", "gray.300")} 
+              border="1px solid"
+              display="flex" 
+              flexDirection="column" 
+              mb="4"
+            >
+              <Stack gap="1" direction="column">
+                <Stack gap="8" alignItems="center">
+                  {/* ADD NODE */}
+                  <Dialog.Root>
+                    <Dialog.Trigger asChild>
+                      <Button bg="green.600">Add New Node</Button>
+                    </Dialog.Trigger>
+                    <Portal>
+                      <Dialog.Backdrop />
+                      <Dialog.Positioner>
+                        <Dialog.Content>
+                          <Dialog.Header>
+                            <Dialog.Title>Add new node to the graph</Dialog.Title>
+                          </Dialog.Header>
+                          <Dialog.Body pb="4">
+                            <Stack gap="4">
+                              <Field.Root required>
+                                <Field.Label>Node Label*</Field.Label>
+                                <InputGroup
+                                  endElement={
+                                      <Span color="fg.muted" textStyle="2xs" position="relative" pt="60px">
+                                      {selectedNodeLabel.length} / {30}
+                                      </Span>
+                                  }
+                                >
+                                  <Textarea placeholder="Label" maxLength={30} onChange={(e) => setNodeLabel(e.target.value)} height="40px" variant="outline" />
+                                </InputGroup>
+                              </Field.Root>
+                              <Field.Root>
+                                <Field.Label>Select a node if you want to create a connection</Field.Label>
+                                <Select.Root collection={collection} size="sm" width="320px" onValueChange={setSelectedNode}>
+                                  <Select.HiddenSelect />
+                                  <Select.Label>Select Node</Select.Label>
+                                  <Select.Control>
+                                    <Select.Trigger>
+                                      <Select.ValueText placeholder="Select node" />
+                                    </Select.Trigger>
+                                    <Select.IndicatorGroup>
+                                      <Select.ClearTrigger />
+                                      <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                    <Select.IndicatorGroup>
+                                      {stateNodes.loading && (
+                                        <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
+                                      )}
+                                      <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                  </Select.Control>
+                                  <Select.Positioner>
+                                      <Select.Content>
+                                        {collection.items.map((node) => (
+                                          <Select.Item item={node} key={node.label}>
+                                            {node.label}
+                                            <Select.ItemIndicator />
+                                          </Select.Item>
+                                        ))}
+                                      </Select.Content>
+                                    </Select.Positioner>
+                                </Select.Root>
+                              </Field.Root>
+                              <Field.Root>
+                                <Field.Label>Please specify the description of the connection you added</Field.Label>
+                                <InputGroup
+                                  endElement={
+                                      <Span color="fg.muted" textStyle="2xs" position="relative" pt="60px">
+                                      {selectedNodeEdgeDesc.length} / {60}
+                                      </Span>
+                                  }
+                              >
+                                  <Textarea value={selectedNodeEdgeDesc} placeholder="Enter connection description" maxLength={60} onChange={(e) => setEdgeDescription(e.target.value)} height="40px" variant="outline" />
+                              </InputGroup>
+                              </Field.Root>
+                            </Stack>
+                          </Dialog.Body>
+                          <Dialog.Footer>
+                            <Dialog.ActionTrigger asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </Dialog.ActionTrigger>
+                            <Dialog.ActionTrigger asChild>
+                              <Button onClick={() => applyNodeAddOperation()}>Add</Button>
+                            </Dialog.ActionTrigger>
+                          </Dialog.Footer>
+                        </Dialog.Content>
+                      </Dialog.Positioner>
+                    </Portal>
+                  </Dialog.Root>
 
-              {/* DELETE NODE */}
-              <Dialog.Root>
-                <Dialog.Trigger asChild>
-                <Button bg="red.500">Delete Node</Button>
-                </Dialog.Trigger>
-                <Portal>
-                  <Dialog.Backdrop />
-                  <Dialog.Positioner>
-                    <Dialog.Content>
-                      <Dialog.Header>
-                        <Dialog.Title>Delete node from graph</Dialog.Title>
-                      </Dialog.Header>
-                      <Dialog.Body pb="4">
-                        <Stack gap="4">
-                          <Field.Root>
-                            <Select.Root collection={LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode} size="sm" width="320px" onValueChange={setSelectedDeleteNode}>
-                              <Select.HiddenSelect />
-                              <Field.Label>Please select a node to delete</Field.Label>
-                              <Select.Control>
-                                <Select.Trigger>
-                                  <Select.ValueText placeholder="Select node" />
-                                </Select.Trigger>
-                                <Select.IndicatorGroup>
-                                  <Select.ClearTrigger />
-                                  <Select.Indicator />
-                                </Select.IndicatorGroup>
-                                <Select.IndicatorGroup>
-                                  {stateUserNodes.loading && (
-                                    <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
-                                  )}
-                                  <Select.Indicator />
-                                </Select.IndicatorGroup>
-                              </Select.Control>
-                              <Select.Positioner>
-                                  <Select.Content>
-                                    {(LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode).items.map((node) => (
-                                      <Select.Item item={node} key={node.label}>
-                                        {node.label}
-                                        <Select.ItemIndicator />
-                                      </Select.Item>
-                                    ))}
-                                  </Select.Content>
-                                </Select.Positioner>
-                            </Select.Root>
-                          </Field.Root>
-                          <Field.Root>
-                            <Text color="red.500" style={{ fontSize: "13px" }}>Please node that when you delete a node, its connections with the other nodes will also be deleted!</Text>
-                          </Field.Root>
-                        </Stack>
-                      </Dialog.Body>
-                      <Dialog.Footer>
-                        <Dialog.ActionTrigger asChild>
-                          <Button variant="outline">Cancel</Button>
-                        </Dialog.ActionTrigger>
-                        <Dialog.ActionTrigger asChild>
-                            <Button onClick={() => deleteNode()}>Delete</Button>
-                        </Dialog.ActionTrigger>
-                      </Dialog.Footer>
-                    </Dialog.Content>
-                  </Dialog.Positioner>
-                </Portal>
-              </Dialog.Root>
+                  {/* DELETE NODE */}
+                  <Dialog.Root>
+                    <Dialog.Trigger asChild>
+                    <Button bg="red.500">Delete Node</Button>
+                    </Dialog.Trigger>
+                    <Portal>
+                      <Dialog.Backdrop />
+                      <Dialog.Positioner>
+                        <Dialog.Content>
+                          <Dialog.Header>
+                            <Dialog.Title>Delete node from graph</Dialog.Title>
+                          </Dialog.Header>
+                          <Dialog.Body pb="4">
+                            <Stack gap="4">
+                              <Field.Root>
+                                <Select.Root collection={LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode} size="sm" width="320px" onValueChange={setSelectedDeleteNode}>
+                                  <Select.HiddenSelect />
+                                  <Field.Label>Please select a node to delete</Field.Label>
+                                  <Select.Control>
+                                    <Select.Trigger>
+                                      <Select.ValueText placeholder="Select node" />
+                                    </Select.Trigger>
+                                    <Select.IndicatorGroup>
+                                      <Select.ClearTrigger />
+                                      <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                    <Select.IndicatorGroup>
+                                      {stateUserNodes.loading && (
+                                        <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
+                                      )}
+                                      <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                  </Select.Control>
+                                  <Select.Positioner>
+                                      <Select.Content>
+                                        {(LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode).items.map((node) => (
+                                          <Select.Item item={node} key={node.label}>
+                                            {node.label}
+                                            <Select.ItemIndicator />
+                                          </Select.Item>
+                                        ))}
+                                      </Select.Content>
+                                    </Select.Positioner>
+                                </Select.Root>
+                              </Field.Root>
+                              <Field.Root>
+                                <Text color="red.500" style={{ fontSize: "13px" }}>Please node that when you delete a node, its connections with the other nodes will also be deleted!</Text>
+                              </Field.Root>
+                            </Stack>
+                          </Dialog.Body>
+                          <Dialog.Footer>
+                            <Dialog.ActionTrigger asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </Dialog.ActionTrigger>
+                            <Dialog.ActionTrigger asChild>
+                                <Button onClick={() => deleteNode()}>Delete</Button>
+                            </Dialog.ActionTrigger>
+                          </Dialog.Footer>
+                        </Dialog.Content>
+                      </Dialog.Positioner>
+                    </Portal>
+                  </Dialog.Root>
 
-              {/* ADD NEW CONNECTION */}
-              <Dialog.Root>
-                <Dialog.Trigger asChild>
-                  <Button bg="blue.500">Add New Connection</Button>
-                </Dialog.Trigger>
-                <Portal>
-                  <Dialog.Backdrop />
-                  <Dialog.Positioner>
-                    <Dialog.Content>
-                      <Dialog.Header>
-                        <Dialog.Title>Add connection</Dialog.Title>
-                      </Dialog.Header>
-                      <Dialog.Body pb="4">
-                        <Stack gap="4">
-                          <Field.Root>
-                            <Select.Root collection={LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode} size="sm" width="320px" onValueChange={setMyNode}>
-                              <Select.HiddenSelect />
-                              <Field.Label>
-                                {LoggedUsername === "admin" ? "Please select first node" : "Please select your node"}
-                              </Field.Label>
-                              <Select.Control>
-                                <Select.Trigger>
-                                  <Select.ValueText placeholder={LoggedUsername === "admin" ? "Select first node" : "Select your node"} />
-                                </Select.Trigger>
-                                <Select.IndicatorGroup>
-                                  <Select.ClearTrigger />
-                                  <Select.Indicator />
-                                </Select.IndicatorGroup>
-                                <Select.IndicatorGroup>
-                                  {stateUserNodes.loading && (
-                                    <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
-                                  )}
-                                  <Select.Indicator />
-                                </Select.IndicatorGroup>
-                              </Select.Control>
-                              <Select.Positioner>
-                                  <Select.Content>
-                                    {(LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode).items.map((node) => (
-                                      <Select.Item item={node} key={node.label}>
-                                        {node.label}
-                                        <Select.ItemIndicator />
-                                      </Select.Item>
-                                    ))}
-                                  </Select.Content>
-                                </Select.Positioner>
-                            </Select.Root>
-                          </Field.Root>
-                          <Field.Root>
-                            <Select.Root collection={collection} size="sm" width="320px" onValueChange={setOtherNode}>
-                              <Select.HiddenSelect />
-                              <Field.Label>Please select other node</Field.Label>
-                              <Select.Control>
-                                <Select.Trigger>
-                                  <Select.ValueText placeholder="Select other node" />
-                                </Select.Trigger>
-                                <Select.IndicatorGroup>
-                                  <Select.ClearTrigger />
-                                  <Select.Indicator />
-                                </Select.IndicatorGroup>
-                                <Select.IndicatorGroup>
-                                  {stateNodes.loading && (
-                                    <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
-                                  )}
-                                  <Select.Indicator />
-                                </Select.IndicatorGroup>
-                              </Select.Control>
-                              <Select.Positioner>
-                                  <Select.Content>
-                                    {collection.items.map((node) => (
-                                      <Select.Item item={node} key={node.label}>
-                                        {node.label}
-                                        <Select.ItemIndicator />
-                                      </Select.Item>
-                                    ))}
-                                  </Select.Content>
-                                </Select.Positioner>
-                            </Select.Root>
-                          </Field.Root>
-                          <Field.Root>
-                            <Field.Label>Please specify the decsription of the connection you added</Field.Label>
-                            <InputGroup
-                              endElement={
-                                  <Span color="fg.muted" textStyle="2xs" position="relative" pt="60px">
-                                  {newConnectionDesc.length} / {60}
-                                  </Span>
-                              }
-                          >
-                              <Textarea value={newConnectionDesc} placeholder="Enter connection description" maxLength={60} onChange={(e) => setNewConnectionDesc(e.target.value)} height="40px" variant="outline" />
-                          </InputGroup>
-                          </Field.Root>
-                        </Stack>
-                      </Dialog.Body>
-                      <Dialog.Footer>
-                        <Dialog.ActionTrigger asChild>
-                          <Button variant="outline" onClick={() => setNewConnectionDesc("")}>Cancel</Button>
-                        </Dialog.ActionTrigger>
-                        <Dialog.ActionTrigger asChild>
-                          <Button bg="blue.500" onClick={() => addNewConnection()}>Add Connection</Button>
-                        </Dialog.ActionTrigger>
-                      </Dialog.Footer>
-                    </Dialog.Content>
-                  </Dialog.Positioner>
-                </Portal>
-              </Dialog.Root>
+                  {/* ADD NEW CONNECTION */}
+                  <Dialog.Root>
+                    <Dialog.Trigger asChild>
+                      <Button bg="blue.500">Add New Connection</Button>
+                    </Dialog.Trigger>
+                    <Portal>
+                      <Dialog.Backdrop />
+                      <Dialog.Positioner>
+                        <Dialog.Content>
+                          <Dialog.Header>
+                            <Dialog.Title>Add connection</Dialog.Title>
+                          </Dialog.Header>
+                          <Dialog.Body pb="4">
+                            <Stack gap="4">
+                              <Field.Root>
+                                <Select.Root collection={LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode} size="sm" width="320px" onValueChange={setMyNode}>
+                                  <Select.HiddenSelect />
+                                  <Field.Label>
+                                    {LoggedUsername === "admin" ? "Please select first node" : "Please select your node"}
+                                  </Field.Label>
+                                  <Select.Control>
+                                    <Select.Trigger>
+                                      <Select.ValueText placeholder={LoggedUsername === "admin" ? "Select first node" : "Select your node"} />
+                                    </Select.Trigger>
+                                    <Select.IndicatorGroup>
+                                      <Select.ClearTrigger />
+                                      <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                    <Select.IndicatorGroup>
+                                      {stateUserNodes.loading && (
+                                        <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
+                                      )}
+                                      <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                  </Select.Control>
+                                  <Select.Positioner>
+                                      <Select.Content>
+                                        {(LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode).items.map((node) => (
+                                          <Select.Item item={node} key={node.label}>
+                                            {node.label}
+                                            <Select.ItemIndicator />
+                                          </Select.Item>
+                                        ))}
+                                      </Select.Content>
+                                    </Select.Positioner>
+                                </Select.Root>
+                              </Field.Root>
+                              <Field.Root>
+                                <Select.Root collection={collection} size="sm" width="320px" onValueChange={setOtherNode}>
+                                  <Select.HiddenSelect />
+                                  <Field.Label>Please select other node</Field.Label>
+                                  <Select.Control>
+                                    <Select.Trigger>
+                                      <Select.ValueText placeholder="Select other node" />
+                                    </Select.Trigger>
+                                    <Select.IndicatorGroup>
+                                      <Select.ClearTrigger />
+                                      <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                    <Select.IndicatorGroup>
+                                      {stateNodes.loading && (
+                                        <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
+                                      )}
+                                      <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                  </Select.Control>
+                                  <Select.Positioner>
+                                      <Select.Content>
+                                        {collection.items.map((node) => (
+                                          <Select.Item item={node} key={node.label}>
+                                            {node.label}
+                                            <Select.ItemIndicator />
+                                          </Select.Item>
+                                        ))}
+                                      </Select.Content>
+                                    </Select.Positioner>
+                                </Select.Root>
+                              </Field.Root>
+                              <Field.Root>
+                                <Field.Label>Please specify the decsription of the connection you added</Field.Label>
+                                  <InputGroup
+                                    endElement={
+                                        <Span color="fg.muted" textStyle="2xs" position="relative" pt="60px">
+                                        {newConnectionDesc.length} / {60}
+                                        </Span>
+                                    }
+                                >
+                                    <Textarea value={newConnectionDesc} placeholder="Enter connection description" maxLength={60} onChange={(e) => setNewConnectionDesc(e.target.value)} height="40px" variant="outline" />
+                                </InputGroup>
+                              </Field.Root>
+                            </Stack>
+                          </Dialog.Body>
+                          <Dialog.Footer>
+                            <Dialog.ActionTrigger asChild>
+                              <Button variant="outline" onClick={() => setNewConnectionDesc("")}>Cancel</Button>
+                            </Dialog.ActionTrigger>
+                            <Dialog.ActionTrigger asChild>
+                              <Button bg="blue.500" onClick={() => addNewConnection()}>Add Connection</Button>
+                            </Dialog.ActionTrigger>
+                          </Dialog.Footer>
+                        </Dialog.Content>
+                      </Dialog.Positioner>
+                    </Portal>
+                  </Dialog.Root>
 
-              {/* REMOVE CONNECTION */}
-              <Dialog.Root>
-                <Dialog.Trigger asChild>
-                  <Button>Remove Connection</Button>
-                </Dialog.Trigger>
-                <Portal>
-                  <Dialog.Backdrop />
-                  <Dialog.Positioner>
-                    <Dialog.Content>
-                      <Dialog.Header>
-                        <Dialog.Title>Remove connection</Dialog.Title>
-                      </Dialog.Header>
-                      <Dialog.Body pb="4">
-                        <Stack gap="4">
-                          <Field.Root>
-                            <Select.Root collection={LoggedUsername === "admin" ? collectionEdgesAdmin : collectionEdges} size="sm" width="320px" onValueChange={setSelectedEdge}>
-                              <Select.HiddenSelect />
-                              <Field.Label>Please select a connection to remove</Field.Label>
-                              <Select.Control>
-                                <Select.Trigger>
-                                  <Select.ValueText placeholder="Select connection" />
-                                </Select.Trigger>
-                                <Select.IndicatorGroup>
-                                  <Select.ClearTrigger />
-                                  <Select.Indicator />
-                                </Select.IndicatorGroup>
-                                <Select.IndicatorGroup>
-                                  {stateEdges.loading && (
-                                    <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
-                                  )}
-                                  <Select.Indicator />
-                                </Select.IndicatorGroup>
-                              </Select.Control>
-                              <Select.Positioner>
-                                  <Select.Content>
-                                    {(LoggedUsername === "admin" ? collectionEdgesAdmin : collectionEdges).items.map((edge) => (
-                                      <Select.Item item={edge} key={edge.source + " -> " + edge.target}>
-                                        {edge.source + " -> " + edge.target}
-                                        <Select.ItemIndicator />
-                                      </Select.Item>
-                                    ))}
-                                  </Select.Content>
-                                </Select.Positioner>
-                            </Select.Root>
-                          </Field.Root>
-                        </Stack>
-                      </Dialog.Body>
-                      <Dialog.Footer>
-                        <Dialog.ActionTrigger asChild>
-                          <Button variant="outline">Cancel</Button>
-                        </Dialog.ActionTrigger>
-                        <Dialog.ActionTrigger asChild>
-                          <Button onClick={() => removeConnection()}>Remove</Button>
-                        </Dialog.ActionTrigger>
-                      </Dialog.Footer>
-                    </Dialog.Content>
-                  </Dialog.Positioner>
-                </Portal>
-              </Dialog.Root>
+                  {/* REMOVE CONNECTION */}
+                  <Dialog.Root>
+                    <Dialog.Trigger asChild>
+                      <Button>Remove Connection</Button>
+                    </Dialog.Trigger>
+                    <Portal>
+                      <Dialog.Backdrop />
+                      <Dialog.Positioner>
+                        <Dialog.Content>
+                          <Dialog.Header>
+                            <Dialog.Title>Remove connection</Dialog.Title>
+                          </Dialog.Header>
+                          <Dialog.Body pb="4">
+                            <Stack gap="4">
+                              <Field.Root>
+                                <Select.Root collection={LoggedUsername === "admin" ? collectionEdgesAdmin : collectionEdges} size="sm" width="320px" onValueChange={setSelectedEdge}>
+                                  <Select.HiddenSelect />
+                                  <Field.Label>Please select a connection to remove</Field.Label>
+                                  <Select.Control>
+                                    <Select.Trigger>
+                                      <Select.ValueText placeholder="Select connection" />
+                                    </Select.Trigger>
+                                    <Select.IndicatorGroup>
+                                      <Select.ClearTrigger />
+                                      <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                    <Select.IndicatorGroup>
+                                      {stateEdges.loading && (
+                                        <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
+                                      )}
+                                      <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                  </Select.Control>
+                                  <Select.Positioner>
+                                      <Select.Content>
+                                        {(LoggedUsername === "admin" ? collectionEdgesAdmin : collectionEdges).items.map((edge) => (
+                                          <Select.Item item={edge} key={edge.source + " -> " + edge.target}>
+                                            {edge.source + " -> " + edge.target}
+                                            <Select.ItemIndicator />
+                                          </Select.Item>
+                                        ))}
+                                      </Select.Content>
+                                    </Select.Positioner>
+                                </Select.Root>
+                              </Field.Root>
+                            </Stack>
+                          </Dialog.Body>
+                          <Dialog.Footer>
+                            <Dialog.ActionTrigger asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </Dialog.ActionTrigger>
+                            <Dialog.ActionTrigger asChild>
+                              <Button onClick={() => removeConnection()}>Remove</Button>
+                            </Dialog.ActionTrigger>
+                          </Dialog.Footer>
+                        </Dialog.Content>
+                      </Dialog.Positioner>
+                    </Portal>
+                  </Dialog.Root>
 
-              {/* DELETE GRAPH ADMIN */}
-              {LoggedUsername === "admin" && (
-                <Dialog.Root>
-                  <Dialog.Trigger asChild>
-                    <Button>Delete Graph</Button>
-                  </Dialog.Trigger>
-                  <Portal>
-                    <Dialog.Backdrop />
-                    <Dialog.Positioner>
-                      <Dialog.Content>
-                        <Dialog.Header>
-                          <Dialog.Title>Delete Graph?</Dialog.Title>
-                        </Dialog.Header>
-                        <Dialog.Body>
-                          <p>
-                            Are you sure you want to delete connection graph? This action cannot be undone. This will permanently
-                            delete all connections and nodes from the system.
-                          </p>
-                        </Dialog.Body>
-                        <Dialog.Footer>
-                          <Dialog.ActionTrigger asChild>
-                            <Button variant="outline">Cancel</Button>
-                          </Dialog.ActionTrigger>
-                          <Dialog.ActionTrigger asChild>
-                            <Button colorPalette="red" onClick={() => deleteGraph()}>Delete</Button>
-                          </Dialog.ActionTrigger>
-                        </Dialog.Footer>
-                        <Dialog.CloseTrigger asChild>
-                          <CloseButton size="sm" />
-                        </Dialog.CloseTrigger>
-                      </Dialog.Content>
-                    </Dialog.Positioner>
-                  </Portal>
-                </Dialog.Root>
-              )}
-            </Stack>
-          </Stack>
-        </Box>
-      </Box>
-  
-      {/* Graph Section */}
-      <Box flex="1" display="flex" pb="5" flexDirection="column">
-        <Text mb="1" fontSize="2xl" fontWeight="bold">Connection Graph</Text>
-        <Box
-          w="100%"
-          h="550px"
-          borderRadius="2xl"
-          boxShadow="2xl"
-          bg="white"
-        >
-          <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodeClick={onNodeClick}
-                fitView
-                nodesDraggable={true}
-                nodesConnectable={false}
-                elementsSelectable={false}
-                panOnScroll
-                zoomOnScroll
-          >
-            <Background />
-          </ReactFlow>
-        </Box>
-      </Box>
-    </Flex>
+                  {/* DELETE GRAPH ADMIN */}
+                  {LoggedUsername === "admin" && (
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <Button>Delete Graph</Button>
+                      </Dialog.Trigger>
+                      <Portal>
+                        <Dialog.Backdrop />
+                        <Dialog.Positioner>
+                          <Dialog.Content>
+                            <Dialog.Header>
+                              <Dialog.Title>Delete Graph?</Dialog.Title>
+                            </Dialog.Header>
+                            <Dialog.Body>
+                              <p>
+                                Are you sure you want to delete connection graph? This action cannot be undone. This will permanently
+                                delete all connections and nodes from the system.
+                              </p>
+                            </Dialog.Body>
+                            <Dialog.Footer>
+                              <Dialog.ActionTrigger asChild>
+                                <Button variant="outline">Cancel</Button>
+                              </Dialog.ActionTrigger>
+                              <Dialog.ActionTrigger asChild>
+                                <Button colorPalette="red" onClick={() => deleteGraph()}>Delete</Button>
+                              </Dialog.ActionTrigger>
+                            </Dialog.Footer>
+                            <Dialog.CloseTrigger asChild>
+                              <CloseButton size="sm" />
+                            </Dialog.CloseTrigger>
+                          </Dialog.Content>
+                        </Dialog.Positioner>
+                      </Portal>
+                    </Dialog.Root>
+                  )}
+                </Stack>
+              </Stack>
+            </Box>
+          </Box>
+      
+          {/* Graph Section */}
+          <Box flex="1" display="flex" pb="5" flexDirection="column">
+            <Text mb="1" fontSize="2xl" fontWeight="bold">Connection Graph</Text>
+            <Box
+              w="100%"
+              h="550px"
+              borderRadius="2xl"
+              boxShadow="2xl"
+              bg="white"
+            >
+              <ReactFlow
+                    nodes={nodes}
+                    edges={edges}
+                    onNodeClick={onNodeClick}
+                    fitView
+                    nodesDraggable={true}
+                    nodesConnectable={false}
+                    elementsSelectable={false}
+                    panOnScroll
+                    zoomOnScroll
+              >
+                <Background />
+              </ReactFlow>
+            </Box>
+          </Box>
+
+          {/* Node Dialog */}
+          <Dialog.Root lazyMount open={open} placement={"center"} scrollBehavior="inside" onOpenChange={(e) => setOpen(e.open)}>
+            <Portal>
+              <Dialog.Backdrop />
+              <Dialog.Positioner>
+                <Dialog.Content>
+                  <Dialog.Header>
+                    <Dialog.Title>Wikidata Information</Dialog.Title>
+                  </Dialog.Header>
+                  <Dialog.Body>
+                    <Text>sdjhkfjkdshfjkds kdjfhjskdhf</Text>
+                  </Dialog.Body>
+                  <Dialog.Footer>
+                    <Dialog.ActionTrigger asChild>
+                      <Button variant="outline">Close</Button>
+                    </Dialog.ActionTrigger>
+                  </Dialog.Footer>
+                  <Dialog.CloseTrigger asChild>
+                    <CloseButton size="sm" />
+                  </Dialog.CloseTrigger>
+                </Dialog.Content>
+              </Dialog.Positioner>
+            </Portal>
+          </Dialog.Root>
+        </Flex>
+      )}
+    </Container>
   );
-  
 }
 
 export default GraphPage;
