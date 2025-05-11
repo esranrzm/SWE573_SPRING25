@@ -15,14 +15,17 @@ function getLayoutedGraph(nodes, edges, direction = 'TB') {
     const dagreGraph = new dagre.graphlib.Graph();
     dagreGraph.setDefaultEdgeLabel(() => ({}));
     dagreGraph.setGraph({ rankdir: direction });
-  
-    nodes.forEach((node) => {
-      dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-    });
-  
-    edges.forEach((edge) => {
-      dagreGraph.setEdge(edge.source, edge.target);
-    });
+
+    if (nodes.length > 0) {
+      nodes.forEach((node) => {
+        dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+      });
+    }
+    if (edges.length > 0) {
+      edges.forEach((edge) => {
+        dagreGraph.setEdge(edge.source, edge.target);
+      });
+    }
   
     dagre.layout(dagreGraph);
   
@@ -38,44 +41,47 @@ function getLayoutedGraph(nodes, edges, direction = 'TB') {
       );
     }
   
-    nodes.forEach((node, index) => {
-      const layout = dagreGraph.node(node.id);
-      const isLayouted = layout !== undefined;
-  
-      // For isolated nodes (without edges), place them randomly and avoid overlap
-      if (!isLayouted) {
-        let randomX, randomY;
-        let tries = 0;
-  
-        // Try random positions until an empty spot is found
-        do {
-          randomX = Math.random() * 3000; // Increased width range
-          randomY = Math.random() * 2000;  // Increased height range
-  
-          tries++;
-          // Give up after a few tries to avoid an infinite loop
-          if (tries > 100) break;
-        } while (isOverlapping(randomX, randomY, nodeWidth, nodeHeight));
-  
-        // Save the position to avoid overlap
-        usedPositions.push({ x: randomX, y: randomY });
-  
-        layoutedNodes.push({
-          ...node,
-          position: { x: randomX, y: randomY },
-          sourcePosition: 'bottom',
-          targetPosition: 'top',
-        });
-      } else {
-        // If layouted by Dagre, keep the layouted position
-        layoutedNodes.push({
-          ...node,
-          position: { x: layout.x, y: layout.y },
-          sourcePosition: 'bottom',
-          targetPosition: 'top',
-        });
-      }
-    });
+    if (nodes.length > 0) {
+      nodes.forEach((node, index) => {
+        const layout = dagreGraph.node(node.id);
+        const isLayouted = layout !== undefined;
+    
+        // For isolated nodes (without edges), place them randomly and avoid overlap
+        if (!isLayouted) {
+          let randomX, randomY;
+          let tries = 0;
+    
+          // Try random positions until an empty spot is found
+          do {
+            randomX = Math.random() * 3000; // Increased width range
+            randomY = Math.random() * 2000;  // Increased height range
+    
+            tries++;
+            // Give up after a few tries to avoid an infinite loop
+            if (tries > 100) break;
+          } while (isOverlapping(randomX, randomY, nodeWidth, nodeHeight));
+    
+          // Save the position to avoid overlap
+          usedPositions.push({ x: randomX, y: randomY });
+    
+          layoutedNodes.push({
+            ...node,
+            position: { x: randomX, y: randomY },
+            sourcePosition: 'bottom',
+            targetPosition: 'top',
+          });
+        } else {
+          // If layouted by Dagre, keep the layouted position
+          layoutedNodes.push({
+            ...node,
+            position: { x: layout.x, y: layout.y },
+            sourcePosition: 'bottom',
+            targetPosition: 'top',
+          });
+        }
+      });
+    }
+    
   
     return { nodes: layoutedNodes, edges };
   }
@@ -191,10 +197,19 @@ function GraphPage() {
       }
       
     } catch (e) {
-      //console.log(e);
+      console.log(e);
       if (e.response?.status === 401) {
         navigate("/");
-      } else {
+      } 
+      if (e.response?.status === 404) {
+        alert("Empty Graph");
+        const graphData = await generateGraphData([], []);
+        if (graphData) {
+          setNodes(graphData.nodes);
+          setEdges(graphData.edges);
+        }
+      }
+      else {
         //alert("An error occurred. Please try again.");
       }
     }
@@ -279,7 +294,7 @@ function GraphPage() {
                   "researchId": researchId,
                   "username": LoggedUsername,
                   "label": selectedNodeLabel,
-                  "connectionNode": selectedNode?.value?.[0] || "",
+                  "connectionNode": selectedNodeEdgeDesc.length > 0 ? selectedNode?.value?.[0] : "",
                   "connectionDesc": selectedNodeEdgeDesc.length > 0 ? selectedNodeEdgeDesc : ""
               });
               
@@ -289,7 +304,7 @@ function GraphPage() {
                 fetchNodeData();
                 setEdgeDescription("");
                 setIsLoading(false);
-                navigate(`/graphPage?param=${researchId}&userId=${userId}`);
+                //navigate(`/graphPage?param=${researchId}&userId=${userId}`);
                 //window.location.reload();
               }
               
@@ -324,7 +339,6 @@ function GraphPage() {
         if(resp.status === 200) {
           alert("Node deleted successfully");
           fetchNodeData();
-          fetchEdgeData();
           setIsLoading(false);
           navigate(`/graphPage?param=${researchId}&userId=${userId}`);
           //cal getNodes again
@@ -366,7 +380,7 @@ function GraphPage() {
           alert("Connection deleted successfully");
           fetchNodeData();
           setIsLoading(false);
-          navigate(`/graphPage?param=${researchId}&userId=${userId}`);
+          //navigate(`/graphPage?param=${researchId}&userId=${userId}`);
         }
         
       } catch (e) {
@@ -424,12 +438,18 @@ function GraphPage() {
           alert("Connection created successfully");
           fetchNodeData();
           setIsLoading(false);
-          navigate(`/graphPage?param=${researchId}&userId=${userId}`);
+          setOtherNode("");
+          setEdgeDescription("");
+          setMyNode("");
+          //navigate(`/graphPage?param=${researchId}&userId=${userId}`);
         }
         
       } catch (e) {
         console.log(e);
         setIsLoading(false);
+        setOtherNode("");
+        setEdgeDescription("");
+        setMyNode("");
         if (e.response?.status === 401) {
           navigate("/");
         } 
