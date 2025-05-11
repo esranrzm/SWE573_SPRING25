@@ -142,56 +142,62 @@ function GraphPage() {
     try {
       const resp = await httpClient.get(`${getUrlPrefix}/api/nodes/research/${researchId}`);
       if (resp.status === 200) {
-        const nodes = resp.data;
-        const currentUserNode = resp.data.filter(node => node.user_id === userId);
-        setNodeList(nodes);
+        if (resp.data.length > 0) {
+          const nodes = resp.data;
+          const currentUserNode = resp.data.filter(node => node.user_id === userId);
+          setNodeList(nodes);
 
-      
-        const { edges = [], currentUserEdges = [] } = await fetchEdgeData() || {};
+        
+          const { edges = [], currentUserEdges = [] } = await fetchEdgeData() || {};
 
-        const graphData = await generateGraphData(nodes, edges);
-        if (graphData) {
-          setNodes(graphData.nodes);
-          setEdges(graphData.edges);
-        }
+          const graphData = await generateGraphData(nodes, edges);
+          if (graphData) {
+            setNodes(graphData.nodes);
+            setEdges(graphData.edges);
+          }
 
-        const newCollectionDeleteNode = createListCollection({
-          items: currentUserNode ?? [],
-          itemToString: (node) => node.label,
-          itemToValue: (node) => node.label,
-        });
-        setCollectionDeleteNode(newCollectionDeleteNode);
-
-        const newCollectionDeleteNodeAdmin = createListCollection({
-          items: nodes ?? [],
-          itemToString: (node) => node.label,
-          itemToValue: (node) => node.label,
-        });
-        setCollectionDeleteNodeAdmin(newCollectionDeleteNodeAdmin);
-
-        const newCollection = createListCollection({
-          items: nodes ?? [],
-          itemToString: (node) => node.label,
-          itemToValue: (node) => node.label,
-        });
-        setNewCollectionNodes(newCollection);
-
-        if (currentUserEdges.length > 0 ) {
-          const newCollectionEdge = createListCollection({
-            items: currentUserEdges ?? [],
-            itemToString: (edge) => edge.source + " -> " + edge.target,
-            itemToValue: (edge) => edge.description,
+          const newCollectionDeleteNode = createListCollection({
+            items: currentUserNode ?? [],
+            itemToString: (node) => node.label,
+            itemToValue: (node) => node.label,
           });
-          setNewCollectionEdges(newCollectionEdge);
-        }
+          setCollectionDeleteNode(newCollectionDeleteNode);
 
-        if (edges.length > 0 ) {
-          const newCollectionEdgeAdmin = createListCollection({
-            items: edges ?? [],
-            itemToString: (edge) => edge.source + " -> " + edge.target,
-            itemToValue: (edge) => edge.description,
+          const newCollectionDeleteNodeAdmin = createListCollection({
+            items: nodes ?? [],
+            itemToString: (node) => node.label,
+            itemToValue: (node) => node.label,
           });
-          setNewCollectionEdgesAdmin(newCollectionEdgeAdmin);
+          setCollectionDeleteNodeAdmin(newCollectionDeleteNodeAdmin);
+
+          const newCollection = createListCollection({
+            items: nodes ?? [],
+            itemToString: (node) => node.label,
+            itemToValue: (node) => node.label,
+          });
+          setNewCollectionNodes(newCollection);
+
+          if (currentUserEdges.length > 0 ) {
+            const newCollectionEdge = createListCollection({
+              items: currentUserEdges ?? [],
+              itemToString: (edge) => edge.source + " -> " + edge.target,
+              itemToValue: (edge) => edge.description,
+            });
+            setNewCollectionEdges(newCollectionEdge);
+          }
+
+          if (edges.length > 0 ) {
+            const newCollectionEdgeAdmin = createListCollection({
+              items: edges ?? [],
+              itemToString: (edge) => edge.source + " -> " + edge.target,
+              itemToValue: (edge) => edge.description,
+            });
+            setNewCollectionEdgesAdmin(newCollectionEdgeAdmin);
+          }
+        }
+        else {
+          setNodes([]);
+          setEdges([]);
         }
         
       }
@@ -200,14 +206,6 @@ function GraphPage() {
       console.log(e);
       if (e.response?.status === 401) {
         navigate("/");
-      } 
-      if (e.response?.status === 404) {
-        alert("Empty Graph");
-        const graphData = await generateGraphData([], []);
-        if (graphData) {
-          setNodes(graphData.nodes);
-          setEdges(graphData.edges);
-        }
       }
       else {
         //alert("An error occurred. Please try again.");

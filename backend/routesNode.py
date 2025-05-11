@@ -38,7 +38,7 @@ def get_current_research_nodes(id):
         research_nodes = Node.query.filter_by(research_id=id).order_by(Node.created_at.desc()).all()
 
         if not research_nodes:
-            return jsonify({"error": "No nodes found for this research"}), 404
+            return jsonify({"error": "No nodes found for this research"}), 200
 
         nodes_list = []
         for node in research_nodes:
