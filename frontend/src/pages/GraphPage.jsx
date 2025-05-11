@@ -273,6 +273,7 @@ function GraphPage() {
             console.log(selectedNodeEdgeDesc);
 
             try { 
+              setIsLoading(true);
               const resp = await httpClient.post(`${getUrlPrefix}/api/nodes/add`, {
                   "userId": userId,
                   "researchId": researchId,
@@ -286,11 +287,15 @@ function GraphPage() {
               if(resp.status === 201) {
                 alert("Node created successfully");
                 fetchNodeData();
-                window.location.reload();
+                setEdgeDescription("");
+                setIsLoading(false);
+                navigate(`/graphPage?param=${researchId}&userId=${userId}`);
+                //window.location.reload();
               }
               
             } catch (e) {
               console.log(e);
+              setIsLoading(false);
               if (e.response?.status === 401) {
                 navigate("/");
               } 
@@ -311,6 +316,7 @@ function GraphPage() {
     }else {
       console.log(selectedDeleteNode.value[0]);
       try { 
+        setIsLoading(true);
         const selectedNodeDetails = nodeList.filter(node => node.label === selectedDeleteNode.value[0]);
         const resp = await httpClient.delete(`${getUrlPrefix}/api/nodes/${selectedNodeDetails[0].id}`);
         
@@ -319,12 +325,14 @@ function GraphPage() {
           alert("Node deleted successfully");
           fetchNodeData();
           fetchEdgeData();
-          window.location.reload();
+          setIsLoading(false);
+          navigate(`/graphPage?param=${researchId}&userId=${userId}`);
           //cal getNodes again
         }
         
       } catch (e) {
         console.log(e);
+        setIsLoading(false);
         if (e.response?.status === 401) {
           navigate("/");
         } 
@@ -351,17 +359,19 @@ function GraphPage() {
       const selectedDeleteEdge = edgeList.filter(edge => edge.id === selected);
 
       try { 
+        setIsLoading(true);
         const resp = await httpClient.delete(`${getUrlPrefix}/api/edges/${selectedDeleteEdge[0].id}`);
         
         if(resp.status === 200) {
           alert("Connection deleted successfully");
-          fetchEdgeData();
-          fetchEdgeData();
-          window.location.reload();
+          fetchNodeData();
+          setIsLoading(false);
+          navigate(`/graphPage?param=${researchId}&userId=${userId}`);
         }
         
       } catch (e) {
         console.log(e);
+        setIsLoading(false);
         if (e.response?.status === 401) {
           navigate("/");
         } 
@@ -397,6 +407,7 @@ function GraphPage() {
       const selectedTargetNode = nodeList.filter(node => node.label === otherNode.value[0]);
 
       try { 
+        setIsLoading(true);
         const resp = await httpClient.post(`${getUrlPrefix}/api/edges/add`, {
             "userId": userId,
             "researchId": researchId,
@@ -411,12 +422,14 @@ function GraphPage() {
     
         if(resp.status === 201) {
           alert("Connection created successfully");
-          fetchEdgeData();
-          window.location.reload();
+          fetchNodeData();
+          setIsLoading(false);
+          navigate(`/graphPage?param=${researchId}&userId=${userId}`);
         }
         
       } catch (e) {
         console.log(e);
+        setIsLoading(false);
         if (e.response?.status === 401) {
           navigate("/");
         } 
