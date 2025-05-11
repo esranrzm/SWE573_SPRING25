@@ -141,6 +141,11 @@ def login_user():
             "error": "Unauthorized, Password is incorrect!"
         }), 401
     
+    any_user = CurrentUser.query.first()
+    if any_user:
+        db.session.delete(any_user)
+        db.session.commit()
+    
     #session["user_id"] = user.id
     logged_user = CurrentUser(
         user_id=user.id,
