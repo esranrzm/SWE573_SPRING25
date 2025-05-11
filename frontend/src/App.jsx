@@ -10,6 +10,7 @@ import ResearchDetailsPage from './pages/ResearchDetailsPage';
 import OtherUserProfilePage from './pages/OtherUserProfile';
 import SearchUserPage from './pages/SearchUser';
 import AdminPage from './pages/adminPage';
+import GraphPage from './pages/GraphPage';
 
 const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
@@ -32,6 +33,7 @@ function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/graphPage" element={<GraphPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

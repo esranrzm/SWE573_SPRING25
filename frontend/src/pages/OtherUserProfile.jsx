@@ -8,12 +8,12 @@ import ConfigHelper from "@/components/configHelper";
 
 const OtherUserProfilePage = () => {
 
-    const [username, setUsername] = useState("testUsername");
-    const [name, setName] = useState("testName");
-    const [surname, setSurname] = useState("testSurname");
-    const [email, setEmail] = useState("testEmail.gmail.com");
-    const [occupation, setOccupation] = useState("test test");
-    const [image, setImage] = useState("https://avatar.iran.liara.run/public/girl?username=esra%20nur");
+    const [username, setUsername] = useState("");
+    const [name, setName] = useState("");
+    const [surname, setSurname] = useState("");
+    const [email, setEmail] = useState("");
+    const [occupation, setOccupation] = useState("");
+    const [image, setImage] = useState("");
     const [bio, setBio] = useState("");
     const queryParams = new URLSearchParams(location.search);
     const userId = queryParams.get('param');

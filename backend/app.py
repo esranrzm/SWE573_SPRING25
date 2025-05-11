@@ -13,6 +13,8 @@ db = SQLAlchemy(app)
 import routes
 import routesResearch
 import routesComment
+import routesEdge
+import routesNode
 
 with app.app_context():
     db.create_all()

@@ -20,7 +20,7 @@ const ProfilePage = () => {
     const [occupation, setOccupation] = useState("test test");
     const [oldPassword, setOldPassword] = useState("test123");
     const [newPassword, setNewPassword] = useState("test123");
-    const [image, setImage] = useState("https://avatar.iran.liara.run/public/girl?username=esra%20nur");
+    const [image, setImage] = useState("");
     const [userId, setUserId] = useState("");
     const [bio, setBio] = useState("");
     const navigate = useNavigate();
@@ -364,7 +364,9 @@ const ProfilePage = () => {
                                                                 <Dialog.ActionTrigger asChild>
                                                                     <Button variant="outline">Cancel</Button>
                                                                 </Dialog.ActionTrigger>
-                                                                <Button colorPalette="red" onClick={() => Logout()}>Delete</Button>
+                                                                <Dialog.ActionTrigger asChild>
+                                                                    <Button colorPalette="red" onClick={() => Logout()}>Delete</Button>
+                                                                </Dialog.ActionTrigger>
                                                             </Dialog.Footer>
                                                             <Dialog.CloseTrigger asChild>
                                                                 <CloseButton size="sm" />

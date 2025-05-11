@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState, useCallback} from 'react';
 import httpClient from "@/httpClient";
-import { Box, Button, Container, Flex, Text, Stack, For, Card, Grid, Dialog, Portal, Field, Input, Textarea, InputGroup, Span, Group } from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Text, Stack, For, Card, Grid, Dialog, Portal, Field, Input, Textarea, InputGroup, Span, Group, Spinner, VStack } from "@chakra-ui/react";
 import { useColorModeValue } from "../components/ui/color-mode";
 import ConfigHelper from '@/components/configHelper';
 
@@ -25,6 +25,7 @@ const HomePage = () => {
     const [resultTopicList, setResultTopicList] = useState([]);
     const [resultPopularTopicList, setResultPopularTopicList] = useState([]);
     const getUrlPrefix = ConfigHelper.getItem("url");
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const MAX_CHARACTERS = 1000
@@ -91,15 +92,17 @@ const HomePage = () => {
           return 0;
         }
       } catch (e) {
-        console.log(e);
+        //console.log(e);
         return 0;
       }
     };
 
     useEffect(() => {
       const fetchAllData = async () => {
+        setIsLoading(true);
         await fetchData();
         await fetchResearchData();
+        setIsLoading(false);
       };
       fetchAllData();
     }, [fetchData, fetchResearchData]);
@@ -111,10 +114,6 @@ const HomePage = () => {
     };
 
     const createTopic = async () => {
-        console.log(topicTitle);
-        console.log(topicDescription);
-        console.log(topicTags);
-
         try { 
           setTopicTags(processTags(topicTags));
           const resp = await httpClient.post(`${getUrlPrefix}/api/researches/create`, {
@@ -133,7 +132,7 @@ const HomePage = () => {
           }
           
         } catch (e) {
-          console.log(e);
+          //console.log(e);
           if (e.response?.status === 401) {
             navigate("/");
           } 
@@ -161,8 +160,6 @@ const HomePage = () => {
           setResultTopicList(filterBySearch);
     };
 
-    
-
     const directToDetails = (topicId) => {
       // Navigate to another page with the topicId and filtered tags
       navigate(`/researchDetails?param=${topicId}`);
@@ -171,6 +168,12 @@ const HomePage = () => {
     
     return (
       <Container maxW="100%">
+        {isLoading ? (
+          <VStack colorPalette="teal" pt="80px">
+            <Spinner size="xl" thickness="4px" speed="0.65s" color="blue.800" />
+            <Text color="blue.800" pl="8px">Loading...</Text>
+          </VStack>
+          ) : (
         <Stack direction="column" spacing={4}>
           <Flex direction="row" justifyContent="space-between" wrap="nowrap" width="100%">
             <Box width="18%" pl="2" pr="4" display="flex" flexDirection="column">
@@ -333,6 +336,8 @@ const HomePage = () => {
             </Box>
           </Flex>
         </Stack>
+        )}
+        
       </Container>
 
     );

@@ -8,14 +8,14 @@ import ConfigHelper from "@/components/configHelper";
 function LandingHome(){
 
     const [user, setUser] = useState(null);
-    const setUrlPrefix = ConfigHelper.setItem("url",'https://swe573-spring25-backend.onrender.com');
+    const setUrlPrefix = ConfigHelper.setItem("url",'http://localhost:5000'); //https://swe573-spring25-backend.onrender.com
     const getUrlPrefix = ConfigHelper.getItem("url");
     const navigate = useNavigate();
 
 
     const logoutUser = async () => {
       const resp = await httpClient.post(`${getUrlPrefix}/api/users/logout`);
-      navigate("/");
+      navigate("/login");
     }
 
     useEffect(() => {
@@ -51,7 +51,7 @@ function LandingHome(){
                     <h1>Logged In</h1>
                     <Button
                            className="button-home"
-                           onClick={logoutUser()}
+                           onClick={() => logoutUser()}
                      >Logout</Button>
                 </div>
                 
