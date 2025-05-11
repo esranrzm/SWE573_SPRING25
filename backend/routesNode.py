@@ -177,3 +177,33 @@ def delete_node(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+    
+
+# delete graph
+@app.route("/api/nodes/research/delete/<string:id>", methods=["DELETE"])
+def delete_graph(id):
+    try:
+        research_nodes = Node.query.filter_by(research_id=id).all() #all nodes for this research
+        if research_nodes is None:
+            return jsonify({"error": "Node not found"}), 400
+        else:
+            try:
+                for node in research_nodes:
+                    db.session.delete(node)
+            except requests.exceptions.RequestException as e:
+                app.logger.error(f"Failed to delete node for target research {id}: {e}")
+        
+        research_edges = Edge.query.filter_by(research_id=id).all() #all edges for this research
+        if research_edges:
+            try:
+                for edge in research_edges:
+                    db.session.delete(edge)
+            except requests.exceptions.RequestException as e:
+                app.logger.error(f"Failed to delete edge for target research {id}: {e}")
+        
+        db.session.commit()
+        return jsonify({"msg":"Graph deleted successfully"}),201
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback  } from 'react';
-import { Box, Button, Flex, Stack, Text, Dialog, Portal, Field, Input, Spinner, Select, createListCollection, InputGroup, Span, Textarea} from '@chakra-ui/react';
+import { Box, Button, Flex, Stack, Text, Dialog, Portal, Field, Input, Spinner, Select, createListCollection, InputGroup, Span, Textarea, CloseButton} from '@chakra-ui/react';
 import { useColorModeValue } from "../components/ui/color-mode";
 import ReactFlow, { Background } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { useNavigate } from 'react-router-dom';
 import httpClient from "@/httpClient";
 import ConfigHelper from "@/components/configHelper";
 import dagre from 'dagre';
@@ -83,6 +84,7 @@ function getLayoutedGraph(nodes, edges, direction = 'TB') {
   
 
 function GraphPage() {
+  const navigate = useNavigate();
   const [nodes, setNodes] = useState([]);
   const [nodeList, setNodeList] = useState([]);
   const [edges, setEdges] = useState([]);
@@ -103,7 +105,13 @@ function GraphPage() {
   const userId = queryParams.get('userId');
   const LoggedUsername = ConfigHelper.getItem('username');
   const getUrlPrefix = ConfigHelper.getItem("url");
+
   const [collectionDeleteNode, setCollectionDeleteNode] = useState(createListCollection({
+    items: [], // Initialize with an empty array
+    itemToString: (node) => node.label,
+    itemToValue: (node) => node.label,
+  }));
+  const [collectionDeleteNodeAdmin, setCollectionDeleteNodeAdmin] = useState(createListCollection({
     items: [], // Initialize with an empty array
     itemToString: (node) => node.label,
     itemToValue: (node) => node.label,
@@ -114,6 +122,11 @@ function GraphPage() {
     itemToValue: (node) => node.label,
   }));
   const [collectionEdges, setNewCollectionEdges] = useState(createListCollection({
+    items: [], // Initialize with an empty array
+    itemToString: (edge) => edge.source + " -> " + edge.target,
+    itemToValue: (edge) => edge.description,
+  }));
+  const [collectionEdgesAdmin, setNewCollectionEdgesAdmin] = useState(createListCollection({
     items: [], // Initialize with an empty array
     itemToString: (edge) => edge.source + " -> " + edge.target,
     itemToValue: (edge) => edge.description,
@@ -145,7 +158,13 @@ function GraphPage() {
         });
         setCollectionDeleteNode(newCollectionDeleteNode);
 
-        const otherUserNodes = nodes.filter(node => node.user_id != userId)
+        const newCollectionDeleteNodeAdmin = createListCollection({
+          items: nodes ?? [],
+          itemToString: (node) => node.label,
+          itemToValue: (node) => node.label,
+        });
+        setCollectionDeleteNodeAdmin(newCollectionDeleteNodeAdmin);
+
         const newCollection = createListCollection({
           items: nodes ?? [],
           itemToString: (node) => node.label,
@@ -153,19 +172,28 @@ function GraphPage() {
         });
         setNewCollectionNodes(newCollection);
 
-        if (edges.length > 0 ) {
+        if (currentUserEdges.length > 0 ) {
           const newCollectionEdge = createListCollection({
-            items: edges ?? [],
+            items: currentUserEdges ?? [],
             itemToString: (edge) => edge.source + " -> " + edge.target,
             itemToValue: (edge) => edge.description,
           });
           setNewCollectionEdges(newCollectionEdge);
         }
+
+        if (edges.length > 0 ) {
+          const newCollectionEdgeAdmin = createListCollection({
+            items: edges ?? [],
+            itemToString: (edge) => edge.source + " -> " + edge.target,
+            itemToValue: (edge) => edge.description,
+          });
+          setNewCollectionEdgesAdmin(newCollectionEdgeAdmin);
+        }
         
       }
       
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       if (e.response?.status === 401) {
         navigate("/");
       } else {
@@ -234,7 +262,6 @@ function GraphPage() {
 
   const onNodeClick = (event, node) => {
     console.log("Node clicked:", node.id);
-    // Example: navigate(`/node-details?id=${node.id}`);
   };
 
   const applyNodeAddOperation = async () => { 
@@ -403,6 +430,29 @@ function GraphPage() {
     }
   };
 
+  const deleteGraph = async () => { 
+    try { 
+      const resp = await httpClient.delete(`${getUrlPrefix}/api/nodes/research/delete/${researchId}`);
+    
+      if(resp.status === 201) {
+        alert("Graph deleted successfully");
+        navigate("/home");
+      }
+      
+    } catch (e) {
+      console.log(e);
+      if (e.response?.status === 401) {
+        navigate("/");
+      } 
+      else if (e.response?.status === 404) {
+        alert("User Not found in db. Please contact support!");
+      }
+      else {
+        alert("No research found");
+      }
+    }
+  };
+
 
   return (
     <Flex alignItems="flex-start" height="100%" pl="80px" pr="20px" flexDirection="row">
@@ -513,7 +563,7 @@ function GraphPage() {
                       <Dialog.Body pb="4">
                         <Stack gap="4">
                           <Field.Root>
-                            <Select.Root collection={collectionDeleteNode} size="sm" width="320px" onValueChange={setSelectedDeleteNode}>
+                            <Select.Root collection={LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode} size="sm" width="320px" onValueChange={setSelectedDeleteNode}>
                               <Select.HiddenSelect />
                               <Field.Label>Please select a node to delete</Field.Label>
                               <Select.Control>
@@ -533,7 +583,7 @@ function GraphPage() {
                               </Select.Control>
                               <Select.Positioner>
                                   <Select.Content>
-                                    {collectionDeleteNode.items.map((node) => (
+                                    {(LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode).items.map((node) => (
                                       <Select.Item item={node} key={node.label}>
                                         {node.label}
                                         <Select.ItemIndicator />
@@ -576,12 +626,14 @@ function GraphPage() {
                       <Dialog.Body pb="4">
                         <Stack gap="4">
                           <Field.Root>
-                            <Select.Root collection={collectionDeleteNode} size="sm" width="320px" onValueChange={setMyNode}>
+                            <Select.Root collection={LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode} size="sm" width="320px" onValueChange={setMyNode}>
                               <Select.HiddenSelect />
-                              <Field.Label>Please select your node</Field.Label>
+                              <Field.Label>
+                                {LoggedUsername === "admin" ? "Please select first node" : "Please select your node"}
+                              </Field.Label>
                               <Select.Control>
                                 <Select.Trigger>
-                                  <Select.ValueText placeholder="Select your node" />
+                                  <Select.ValueText placeholder={LoggedUsername === "admin" ? "Select first node" : "Select your node"} />
                                 </Select.Trigger>
                                 <Select.IndicatorGroup>
                                   <Select.ClearTrigger />
@@ -596,7 +648,7 @@ function GraphPage() {
                               </Select.Control>
                               <Select.Positioner>
                                   <Select.Content>
-                                    {collectionDeleteNode.items.map((node) => (
+                                    {(LoggedUsername === "admin" ? collectionDeleteNodeAdmin : collectionDeleteNode).items.map((node) => (
                                       <Select.Item item={node} key={node.label}>
                                         {node.label}
                                         <Select.ItemIndicator />
@@ -679,7 +731,7 @@ function GraphPage() {
                       <Dialog.Body pb="4">
                         <Stack gap="4">
                           <Field.Root>
-                            <Select.Root collection={collectionEdges} size="sm" width="320px" onValueChange={setSelectedEdge}>
+                            <Select.Root collection={LoggedUsername === "admin" ? collectionEdgesAdmin : collectionEdges} size="sm" width="320px" onValueChange={setSelectedEdge}>
                               <Select.HiddenSelect />
                               <Field.Label>Please select a connection to remove</Field.Label>
                               <Select.Control>
@@ -699,7 +751,7 @@ function GraphPage() {
                               </Select.Control>
                               <Select.Positioner>
                                   <Select.Content>
-                                    {collectionEdges.items.map((edge) => (
+                                    {(LoggedUsername === "admin" ? collectionEdgesAdmin : collectionEdges).items.map((edge) => (
                                       <Select.Item item={edge} key={edge.source + " -> " + edge.target}>
                                         {edge.source + " -> " + edge.target}
                                         <Select.ItemIndicator />
@@ -723,7 +775,42 @@ function GraphPage() {
                   </Dialog.Positioner>
                 </Portal>
               </Dialog.Root>
-              
+
+              {/* DELETE GRAPH ADMIN */}
+              {LoggedUsername === "admin" && (
+                <Dialog.Root>
+                  <Dialog.Trigger asChild>
+                    <Button>Delete Graph</Button>
+                  </Dialog.Trigger>
+                  <Portal>
+                    <Dialog.Backdrop />
+                    <Dialog.Positioner>
+                      <Dialog.Content>
+                        <Dialog.Header>
+                          <Dialog.Title>Delete Graph?</Dialog.Title>
+                        </Dialog.Header>
+                        <Dialog.Body>
+                          <p>
+                            Are you sure you want to delete connection graph? This action cannot be undone. This will permanently
+                            delete all connections and nodes from the system.
+                          </p>
+                        </Dialog.Body>
+                        <Dialog.Footer>
+                          <Dialog.ActionTrigger asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </Dialog.ActionTrigger>
+                          <Dialog.ActionTrigger asChild>
+                            <Button colorPalette="red" onClick={() => deleteGraph()}>Delete</Button>
+                          </Dialog.ActionTrigger>
+                        </Dialog.Footer>
+                        <Dialog.CloseTrigger asChild>
+                          <CloseButton size="sm" />
+                        </Dialog.CloseTrigger>
+                      </Dialog.Content>
+                    </Dialog.Positioner>
+                  </Portal>
+                </Dialog.Root>
+              )}
             </Stack>
           </Stack>
         </Box>

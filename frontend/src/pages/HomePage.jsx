@@ -91,7 +91,7 @@ const HomePage = () => {
           return 0;
         }
       } catch (e) {
-        console.log(e);
+        //console.log(e);
         return 0;
       }
     };
@@ -111,10 +111,6 @@ const HomePage = () => {
     };
 
     const createTopic = async () => {
-        console.log(topicTitle);
-        console.log(topicDescription);
-        console.log(topicTags);
-
         try { 
           setTopicTags(processTags(topicTags));
           const resp = await httpClient.post(`${getUrlPrefix}/api/researches/create`, {
@@ -133,7 +129,7 @@ const HomePage = () => {
           }
           
         } catch (e) {
-          console.log(e);
+          //console.log(e);
           if (e.response?.status === 401) {
             navigate("/");
           } 
@@ -160,8 +156,6 @@ const HomePage = () => {
           );
           setResultTopicList(filterBySearch);
     };
-
-    
 
     const directToDetails = (topicId) => {
       // Navigate to another page with the topicId and filtered tags

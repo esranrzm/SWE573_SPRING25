@@ -51,7 +51,7 @@ function LandingHome(){
                     <h1>Logged In</h1>
                     <Button
                            className="button-home"
-                           onClick={logoutUser()}
+                           onClick={() => logoutUser()}
                      >Logout</Button>
                 </div>
                 
