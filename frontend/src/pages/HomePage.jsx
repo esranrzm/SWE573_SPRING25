@@ -161,7 +161,6 @@ const HomePage = () => {
     };
 
     const directToDetails = (topicId) => {
-      // Navigate to another page with the topicId and filtered tags
       navigate(`/researchDetails?param=${topicId}`);
     };
 

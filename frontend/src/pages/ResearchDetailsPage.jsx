@@ -1,4 +1,4 @@
-import { Box, Button, Container, Flex, Text, Stack, For, Card, Image, Portal, Input, Field, Dialog, Tabs, Link, InputGroup, IconButton, Textarea, Span, CloseButton} from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Text, Stack, For, Card, Portal, Input, Field, Dialog, Tabs, Link, InputGroup, IconButton, Textarea, Span, CloseButton} from "@chakra-ui/react";
 import { LuPencilLine, LuTrash  } from "react-icons/lu"
 import { useColorModeValue } from "../components/ui/color-mode";
 import { useState, useEffect } from "react"
@@ -273,8 +273,6 @@ const ResearchDetailsPage = () => {
     }, []);
 
     
-
-
     return (
         <Container>
             <Stack direction="row" spacing={4}>
@@ -289,21 +287,7 @@ const ResearchDetailsPage = () => {
                     </Tabs.List>
                     <Tabs.Content value="graph">
                         <Box pl="2" maxWidth="600px"  pr="4" display="flex" flexDirection="column">
-                            <Box 
-                            pt="4" pl="4" pb="4" borderRadius={8} bg={useColorModeValue("gray.100", "gray.500")}
-                            borderColor={useColorModeValue("gray.800", "gray.300")} border="2px solid"
-                            display="flex" flexDirection="column" 
-                            >
-                                <Image
-                                    src='/graphSample.png'
-                                    boxSize="350px"
-                                    fit="cover"
-                                />
-                        
-                            </Box>
-                            <Dialog.Root size="cover" placement="center" motionPreset="slide-in-bottom">
-                                <Dialog.Trigger asChild>
-                                    <Button 
+                            <Button 
                                     textStyle="lg" 
                                     minWidth="40px" 
                                     height="auto" 
@@ -315,52 +299,8 @@ const ResearchDetailsPage = () => {
                                     bg="blue.800"
                                     onClick={() => directToGraphPage()}
                                 >
-                                    + Add new node to the graph
-                                </Button>
-                                </Dialog.Trigger>
-                                <Portal>
-                                    <Dialog.Backdrop />
-                                    <Dialog.Positioner pr="24" pl="24">
-                                    <Dialog.Content>
-                                        <Dialog.Header>
-                                            <Dialog.Title>Add new node to the graph</Dialog.Title>
-                                        </Dialog.Header>
-                                        <Dialog.Body pb="4">
-                                            <Stack gap="4">
-                                                <Field.Root required>
-                                                    <Field.Label>Title <Field.RequiredIndicator /></Field.Label>
-                                                    <Input value="sdsdsd" placeholder="Enter research title..."/>
-                                                </Field.Root>
-                                                <Field.Root required>
-                                                    <Field.Label>
-                                                    Description <Field.RequiredIndicator />
-                                                    </Field.Label>
-                                                    <InputGroup>
-                                                        <Textarea placeholder="Enter research description..."  height="200px" variant="outline"/>
-                                                    </InputGroup>
-                                                
-                                                </Field.Root>
-                                                <Field.Root required>
-                                                    <Field.Label>Tags <Field.RequiredIndicator /></Field.Label>
-                                                    <Input value="dfsdfdsfsfs"placeholder="Enter research topics..."/>
-                                                    <Field.HelperText fontSize="2xs">You can add as many tag as much. You need to add '#' in front of each tag and seperate them with ','. Also, you should not use space character in your tags. Tags that does not satisfy these requirements will not be added to the tag list.</Field.HelperText>
-                                                    <Field.HelperText fontSize="2xs">e.g., #chatGPT, #GenerativeAI, #LLMSs, #bigData, #workingWithKubernates</Field.HelperText>
-                                                    
-                                                </Field.Root>
-                                            </Stack>
-                                        </Dialog.Body>
-                                        <Dialog.Footer>
-                                            <Dialog.ActionTrigger asChild>
-                                                <Button variant="outline" >Cancel</Button>
-                                            </Dialog.ActionTrigger>
-                                            <Dialog.ActionTrigger asChild>
-                                                <Button bg="blue.800" onClick={() => createTopic()}>Create</Button>
-                                            </Dialog.ActionTrigger>
-                                        </Dialog.Footer>
-                                    </Dialog.Content>
-                                    </Dialog.Positioner>
-                                </Portal>
-                            </Dialog.Root>
+                                    Go to Research Connection Graph
+                            </Button>
                             <Flex direction="column" pt="50px" justifyContent="space-between" wrap="nowrap" width="100%">
                                 <Text fontSize="xl" fontWeight="bold" textDecoration="underline" pb="2">
                                     Topic Tags

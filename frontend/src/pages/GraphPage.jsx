@@ -111,6 +111,8 @@ function GraphPage() {
   const getUrlPrefix = ConfigHelper.getItem("url");
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false)
+  const [wikidataText, setWikidataText] = useState([]);
+  const [nodeClicked, setNodeClicked] = useState("")
 
   const [collectionDeleteNode, setCollectionDeleteNode] = useState(createListCollection({
     items: [], // Initialize with an empty array
@@ -272,9 +274,22 @@ function GraphPage() {
   }, [fetchNodeData]);
 
 
-  const onNodeClick = (event, node) => {
-    console.log("Node clicked:", node.id);
-    setOpen(true);
+  const onNodeClick = async (event, node) => {
+    try { 
+      setOpen(true);
+      setIsLoading(true);
+      const resp = await httpClient.post(`${getUrlPrefix}/api/wikidata`, {
+          "label": node.data.label
+      });
+      setNodeClicked(node.data.label);
+      setWikidataText(resp.data.result);
+      setIsLoading(false);
+
+      
+    } catch (e) {
+      setIsLoading(false);
+      setWikidataText("No wikidata details found");
+    }
   };
 
   const applyNodeAddOperation = async () => { 
@@ -894,14 +909,18 @@ function GraphPage() {
               <Dialog.Positioner>
                 <Dialog.Content>
                   <Dialog.Header>
-                    <Dialog.Title>Wikidata Information</Dialog.Title>
+                    <Dialog.Title>Wikidata Information for node "{nodeClicked}"</Dialog.Title>
                   </Dialog.Header>
                   <Dialog.Body>
-                    <Text>sdjhkfjkdshfjkds kdjfhjskdhf</Text>
+                    {wikidataText.map((line, index) => (
+                      <Text key={index} textStyle="md" pb="10px">
+                        {line}
+                      </Text>
+                    ))}
                   </Dialog.Body>
                   <Dialog.Footer>
                     <Dialog.ActionTrigger asChild>
-                      <Button variant="outline">Close</Button>
+                      <Button variant="outline" onClick={() => setNodeClicked("")}>Close</Button>
                     </Dialog.ActionTrigger>
                   </Dialog.Footer>
                   <Dialog.CloseTrigger asChild>
