@@ -723,11 +723,17 @@ function GraphPage() {
                                     Please wait...
                                   </Text>
                                 ) : (
-                                  wikidataText.map((line, index) => (
-                                    <Text key={index} textStyle="md" pb="10px">
-                                      {line}
+                                  Array.isArray(wikidataText) ? (
+                                    wikidataText.map((line, index) => (
+                                      <Text key={index} textStyle="md" pb="10px">
+                                        {line}
+                                      </Text>
+                                    ))
+                                  ) : (
+                                    <Text textStyle="md" pb="10px">
+                                      No data available.
                                     </Text>
-                                  ))
+                                  )
                                 )}  
                               </Field.Root>
                           </Dialog.Body>
