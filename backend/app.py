@@ -15,6 +15,7 @@ import routesResearch
 import routesComment
 import routesEdge
 import routesNode
+import wikidata
 
 with app.app_context():
     db.create_all()
