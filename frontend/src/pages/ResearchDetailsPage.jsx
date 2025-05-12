@@ -561,7 +561,7 @@ const ResearchDetailsPage = () => {
                                                                             <Text textStyle="2xs">Created At: {comment.created_at}</Text>
                                                                         </Stack>
                                                                         {/* Show both buttons for the comment author */}
-                                                                        {userName === comment.author_name && LoggedUsername != "admin" (
+                                                                        {userName === comment.author_name && LoggedUsername !== "admin" (
                                                                             <Stack gap="2" direction="row">
                                                                                 {/* Edit button for the comment author */}
                                                                                 <Dialog.Root placement="center" motionPreset="slide-in-bottom">
