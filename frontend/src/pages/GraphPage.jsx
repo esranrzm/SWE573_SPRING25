@@ -110,9 +110,9 @@ function GraphPage() {
   const LoggedUsername = ConfigHelper.getItem('username');
   const getUrlPrefix = ConfigHelper.getItem("url");
   const [isLoading, setIsLoading] = useState(false);
-  const [open, setOpen] = useState(false)
   const [wikidataText, setWikidataText] = useState([]);
   const [nodeClicked, setNodeClicked] = useState("")
+  const [inProgress, setInprogress] = useState(false)
 
   const [collectionDeleteNode, setCollectionDeleteNode] = useState(createListCollection({
     items: [], // Initialize with an empty array
@@ -274,20 +274,22 @@ function GraphPage() {
   }, [fetchNodeData]);
 
 
-  const onNodeClick = async (event, node) => {
+  const onNodeClick = async () => {
     try { 
-      setOpen(true);
-      setIsLoading(true);
+      //setOpen(true);
+      setInprogress(true);
       const resp = await httpClient.post(`${getUrlPrefix}/api/wikidata`, {
-          "label": node.data.label
+          "label": selectedDeleteNode.value[0]
       });
-      setNodeClicked(node.data.label);
+      setNodeClicked(selectedDeleteNode.value[0]);
       setWikidataText(resp.data.result);
-      setIsLoading(false);
+      setSelectedDeleteNode("");
+      setInprogress(false);
 
       
     } catch (e) {
-      setIsLoading(false);
+      setInprogress(false);
+      setSelectedDeleteNode("");
       setWikidataText("No wikidata details found");
     }
   };
@@ -671,6 +673,75 @@ function GraphPage() {
                     </Portal>
                   </Dialog.Root>
 
+                  {/* GET NODE WIKIDATA */}
+                  <Dialog.Root scrollBehavior="inside">
+                    <Dialog.Trigger asChild>
+                    <Button bg="orange.500">Get Node Wikidata</Button>
+                    </Dialog.Trigger>
+                    <Portal>
+                      <Dialog.Backdrop />
+                      <Dialog.Positioner>
+                        <Dialog.Content>
+                          <Dialog.Header>
+                            <Dialog.Title>Get node detaild from wikidata</Dialog.Title>
+                          </Dialog.Header>
+                          <Dialog.Body >
+                            <Field.Root>
+                              <Select.Root collection={collectionDeleteNodeAdmin} size="sm" width="320px" pb="120px" onValueChange={setSelectedDeleteNode}>
+                                <Select.HiddenSelect />
+                                <Field.Label>Please select a node to see the details</Field.Label>
+                                <Select.Control >
+                                  <Select.Trigger>
+                                    <Select.ValueText placeholder="Select node" />
+                                  </Select.Trigger>
+                                  <Select.IndicatorGroup>
+                                    <Select.ClearTrigger />
+                                    <Select.Indicator />
+                                  </Select.IndicatorGroup>
+                                  <Select.IndicatorGroup>
+                                    {stateUserNodes.loading && (
+                                      <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
+                                    )}
+                                    <Select.Indicator />
+                                  </Select.IndicatorGroup>
+                                </Select.Control>
+                                <Select.Positioner>
+                                    <Select.Content>
+                                      {(collectionDeleteNodeAdmin).items.map((node) => (
+                                        <Select.Item item={node} key={node.label}>
+                                          {node.label}
+                                          <Select.ItemIndicator />
+                                        </Select.Item>
+                                      ))}
+                                    </Select.Content>
+                                  </Select.Positioner>
+                              </Select.Root>
+                              </Field.Root>
+                              <Field.Root>
+                                {inProgress ? (
+                                  <Text textStyle="md" pb="10px">
+                                    Please wait...
+                                  </Text>
+                                ) : (
+                                  wikidataText.map((line, index) => (
+                                    <Text key={index} textStyle="md" pb="10px">
+                                      {line}
+                                    </Text>
+                                  ))
+                                )}  
+                              </Field.Root>
+                          </Dialog.Body>
+                          <Dialog.Footer>
+                            <Dialog.ActionTrigger asChild>
+                              <Button variant="outline" onClick={() => setWikidataText([])}>Close</Button>
+                            </Dialog.ActionTrigger>
+                            <Button onClick={() => onNodeClick()}>Get Details</Button>
+                          </Dialog.Footer>
+                        </Dialog.Content>
+                      </Dialog.Positioner>
+                    </Portal>
+                  </Dialog.Root>
+
                   {/* ADD NEW CONNECTION */}
                   <Dialog.Root>
                     <Dialog.Trigger asChild>
@@ -889,7 +960,6 @@ function GraphPage() {
               <ReactFlow
                     nodes={nodes}
                     edges={edges}
-                    onNodeClick={onNodeClick}
                     fitView
                     nodesDraggable={true}
                     nodesConnectable={false}
@@ -901,35 +971,6 @@ function GraphPage() {
               </ReactFlow>
             </Box>
           </Box>
-
-          {/* Node Dialog */}
-          <Dialog.Root lazyMount open={open} placement={"center"} scrollBehavior="inside" onOpenChange={(e) => setOpen(e.open)}>
-            <Portal>
-              <Dialog.Backdrop />
-              <Dialog.Positioner>
-                <Dialog.Content>
-                  <Dialog.Header>
-                    <Dialog.Title>Wikidata Information for node "{nodeClicked}"</Dialog.Title>
-                  </Dialog.Header>
-                  <Dialog.Body>
-                    {wikidataText.map((line, index) => (
-                      <Text key={index} textStyle="md" pb="10px">
-                        {line}
-                      </Text>
-                    ))}
-                  </Dialog.Body>
-                  <Dialog.Footer>
-                    <Dialog.ActionTrigger asChild>
-                      <Button variant="outline" onClick={() => setNodeClicked("")}>Close</Button>
-                    </Dialog.ActionTrigger>
-                  </Dialog.Footer>
-                  <Dialog.CloseTrigger asChild>
-                    <CloseButton size="sm" />
-                  </Dialog.CloseTrigger>
-                </Dialog.Content>
-              </Dialog.Positioner>
-            </Portal>
-          </Dialog.Root>
         </Flex>
       )}
     </Container>
