@@ -184,7 +184,6 @@ def logout():
 @app.route("/api/users/<string:id>", methods=["DELETE"])
 def delete_user(id):
     try:
-        logged_user = CurrentUser.query.get(user_id=id)
         user = User.query.get(id)
         if user is None:
             return jsonify({"error": "User not found"}), 400
@@ -192,8 +191,11 @@ def delete_user(id):
         db.session.delete(user)
         db.session.commit()
 
-        db.session.delete(logged_user)
-        db.session.commit()
+        if user.username != "admin":
+            logged_user = CurrentUser.query.first()
+            if logged_user is not None:
+                db.session.delete(logged_user)
+                db.session.commit()
         return jsonify({"msg":"User deleted successfully"}),200
     
     except Exception as e:

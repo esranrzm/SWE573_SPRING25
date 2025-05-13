@@ -20,6 +20,7 @@ const ResearchDetailsPage = () => {
     const [loggedUserId, setLoggedUserId] = useState("");
     const [currentComment, setCurrentComment] = useState("");
     const [newComment, setNewComment] = useState("");
+    const [clickedComment, setClickedComment] = useState("");
     const [resultCommentList, setResultCommentList] = useState([]);
     const LoggedUsername = ConfigHelper.getItem('username');
     const getUrlPrefix = ConfigHelper.getItem("url");
@@ -166,6 +167,25 @@ const ResearchDetailsPage = () => {
             }
         }
     };
+
+    const getClickedComment = async (id) => {
+        try {
+            const resp = await httpClient.get(`${getUrlPrefix}/api/comments/${id}`);
+            setCurrentComment(resp.data.comment)
+        
+            if (resp.status != 200) {
+                alert("An error occurred. Please try again.");
+            }
+            
+        } catch (e) {
+            console.log(e);
+            if (e.response?.status === 401) {
+                //navigate("/");
+            } else {
+                alert("An error occurred. Please try again.");
+            }
+        }
+        };
 
     const updateCurrentComment = async (commentId) => {
         try {
@@ -570,6 +590,7 @@ const ResearchDetailsPage = () => {
                                                                                             aria-label="Edit comment"
                                                                                             key="surface"
                                                                                             variant="surface"
+                                                                                            onClick={() => getClickedComment(comment.id)}
                                                                                         >
                                                                                             <LuPencilLine />
                                                                                         </IconButton>
