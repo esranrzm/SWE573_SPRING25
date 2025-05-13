@@ -140,7 +140,7 @@ const ResearchDetailsPage = () => {
             if (e.response?.status === 401) {
                 navigate("/");
             } else {
-                alert("An error occurred. Please try again.");
+            alert("An error occurred. Please try again.");
             }
         }
     };
@@ -163,7 +163,7 @@ const ResearchDetailsPage = () => {
             if (e.response?.status === 401) {
                 navigate("/");
             } else {
-                alert("An error occurred. Please try again.");
+            alert("An error occurred. Please try again.");
             }
         }
     };
@@ -185,6 +185,7 @@ const ResearchDetailsPage = () => {
                 alert("An error occurred. Please try again.");
             }
         }
+        };
 
     const updateCurrentComment = async (commentId) => {
         try {
