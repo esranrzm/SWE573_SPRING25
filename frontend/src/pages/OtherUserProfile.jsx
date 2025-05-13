@@ -75,9 +75,9 @@ const OtherUserProfilePage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-            //window.location.href = "/";
+                //window.location.href = "/";
             } else {
-            alert(`No research found for the user ${username}`);
+                //alert(`No research found for the user ${username}`);
             }
         }
     };
@@ -98,9 +98,9 @@ const OtherUserProfilePage = () => {
         } catch (e) {
             console.log(e);
             if (e.response?.status === 401) {
-            //window.location.href = "/";
+                //window.location.href = "/";
             } else {
-            alert(`No comments/contributions found for the user ${username}`);
+                //alert(`No comments/contributions found for the user ${username}`);
             }
         }
     };
@@ -241,7 +241,9 @@ const OtherUserProfilePage = () => {
                                                             <Dialog.ActionTrigger asChild>
                                                                 <Button variant="outline">Cancel</Button>
                                                             </Dialog.ActionTrigger>
-                                                            <Button colorPalette="red" onClick={() => deleteUser()}>Delete</Button>
+                                                            <Dialog.ActionTrigger asChild>
+                                                                <Button colorPalette="red" onClick={() => deleteUser()}>Delete</Button>
+                                                            </Dialog.ActionTrigger>
                                                         </Dialog.Footer>
                                                         <Dialog.CloseTrigger asChild>
                                                             <CloseButton size="sm" />
