@@ -10,18 +10,20 @@ function LandingHome(){
     const [user, setUser] = useState(null);
     const setUrlPrefix = ConfigHelper.setItem("url",'http://localhost:5000'); //https://swe573-spring25-backend.onrender.com
     const getUrlPrefix = ConfigHelper.getItem("url");
+    const uid = ConfigHelper.getItem("userId");
     const navigate = useNavigate();
 
 
     const logoutUser = async () => {
       const resp = await httpClient.post(`${getUrlPrefix}/api/users/logout`);
+      ConfigHelper.setItem('userId', "")
       navigate("/login");
     }
 
     useEffect(() => {
         (async () => {
             try {
-                const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
+                const resp = await httpClient.get(`${getUrlPrefix}/api/users/getSearchedUser/${uid}`);
 
                 setUser(resp.data);
             }

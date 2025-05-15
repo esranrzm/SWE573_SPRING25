@@ -17,7 +17,9 @@ const Navbar = () => {
  
 		try {
 			const resp = await httpClient.post(`${getUrlPrefix}/api/users/logout`, {});
+			ConfigHelper.setItem('userId', "")
 			navigate("/login");
+		
 		}
 		catch (e) {
 			console.log(e)

@@ -25,6 +25,7 @@ const HomePage = () => {
     const [resultTopicList, setResultTopicList] = useState([]);
     const [resultPopularTopicList, setResultPopularTopicList] = useState([]);
     const getUrlPrefix = ConfigHelper.getItem("url");
+    const uid = ConfigHelper.getItem("userId");
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -32,7 +33,7 @@ const HomePage = () => {
 
     const fetchData = useCallback(async () => {
       try {
-        const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
+        const resp = await httpClient.get(`${getUrlPrefix}/api/users/getSearchedUser/${uid}`);
         if (resp.status != 200) {
           navigate("/login");
         }
@@ -119,6 +120,7 @@ const HomePage = () => {
           const resp = await httpClient.post(`${getUrlPrefix}/api/researches/create`, {
               "title": topicTitle,
               "description": topicDescription,
+              "userId": uid,
               "tags": topicTags
           });
           

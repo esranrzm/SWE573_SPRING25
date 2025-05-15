@@ -25,6 +25,7 @@ const Login = () => {
                 password,
             });
             ConfigHelper.setItem('username', username);
+            ConfigHelper.setItem('userId', resp.data.id);
             setIsLoading(false);
             navigate("/home");
         }

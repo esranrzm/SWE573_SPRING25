@@ -8,23 +8,23 @@ import ConfigHelper from "@/components/configHelper";
 
 const ProfilePage = () => {
 
-    //const ref = useRef<HTMLInputElement>(null)
-    const [username, setUsername] = useState("testUsername");
-    const [name, setName] = useState("testName");
-    const [surname, setSurname] = useState("testSurname");
+    const [username, setUsername] = useState("");
+    const [name, setName] = useState("");
+    const [surname, setSurname] = useState("");
     const [searchedTopic, setSearchedTopic] = useState("");
     const [searchedHotTopic, setSearchedHotTopic] = useState("");
     const [resultTopicList, setResultTopicList] = useState([]);
     const [resultHotTopicList, setResultHotTopicList] = useState([]);
-    const [email, setEmail] = useState("testEmail.gmail.com");
-    const [occupation, setOccupation] = useState("test test");
-    const [oldPassword, setOldPassword] = useState("test123");
-    const [newPassword, setNewPassword] = useState("test123");
+    const [email, setEmail] = useState("");
+    const [occupation, setOccupation] = useState("");
+    const [oldPassword, setOldPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
     const [image, setImage] = useState("");
     const [userId, setUserId] = useState("");
     const [bio, setBio] = useState("");
     const navigate = useNavigate();
     const getUrlPrefix = ConfigHelper.getItem("url");
+    const uid = ConfigHelper.getItem("userId");
 
     const [isOpen, setIsOpen] = useState(false);
     const usernameRef = useRef(null); // Create a ref for the input
@@ -39,7 +39,7 @@ const ProfilePage = () => {
 
     const fetchData = async () => {
         try {
-          const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
+          const resp = await httpClient.get(`${getUrlPrefix}/api/users/getSearchedUser/${uid}`);
           setUsername(resp.data.username)
           setName(resp.data.name)
           setSurname(resp.data.surname)
@@ -48,7 +48,6 @@ const ProfilePage = () => {
           setImage(resp.data.img_url)
           setUserId(resp.data.id)
           setBio(resp.data.bio ?? "Enter Bio description...")
-          console.log(image)
       
           if (resp.status != 200) {
               alert("An error occurred. Please try again.");
@@ -122,7 +121,6 @@ const ProfilePage = () => {
       }, [userId]);
 
     
-
     const updateBioValues = async () => { 
         setIsOpen(false);
         try {
@@ -219,6 +217,7 @@ const ProfilePage = () => {
                 const resp = await httpClient.post(`${getUrlPrefix}/api/users/logout`, {});
                 
                 if(resp.status === 200) {
+                    ConfigHelper.setItem('userId', "");
                     deleteAccount();
                 }
                 else {

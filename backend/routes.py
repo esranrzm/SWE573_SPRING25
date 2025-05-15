@@ -31,7 +31,7 @@ def get_searched_user(id):
         "occupation": user.occupation,
         "img_url": user.image_url,
         "hashedPassword": user.password
-    })
+    }), 200
 
 # get current user
 @app.route("/api/users/@me", methods=["GET"])
@@ -90,7 +90,7 @@ def register_user():
         elif gender == "female":
             img_url = f"https://avatar.iran.liara.run/public/girl?username={name}"
         else:
-            img_url = f"https://avatar.iran.liara.run/public/girl?username={name}"
+            img_url = f"https://avatar.iran.liara.run/public/boy?username={name}"
 
         hashed_password = bcrypt.generate_password_hash(password)
 
@@ -109,8 +109,6 @@ def register_user():
 
         db.session.add(new_user)
         db.session.commit()
-
-        #session["user_id"] = new_user.id
 
         return jsonify(
             {
@@ -141,19 +139,6 @@ def login_user():
             "error": "Unauthorized, Password is incorrect!"
         }), 401
     
-    any_user = CurrentUser.query.first()
-    if any_user:
-        db.session.delete(any_user)
-        db.session.commit()
-    
-    #session["user_id"] = user.id
-    logged_user = CurrentUser(
-        user_id=user.id,
-        logged_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    )
-    db.session.add(logged_user)
-    db.session.commit()
-
     return jsonify(
             {
                 "id": user.id,
@@ -166,13 +151,6 @@ def login_user():
 @app.route("/api/users/logout", methods=["POST"])
 def logout():
     try:
-        currentUser = CurrentUser.query.first() #session.get("user_id")
-
-        if not currentUser:
-            return jsonify({"msg": "No user logged in."}), 200
-        
-        db.session.delete(currentUser)
-        db.session.commit()
         return jsonify({"msg": "Logout successful."}),200
     
     except Exception as e:
@@ -191,11 +169,6 @@ def delete_user(id):
         db.session.delete(user)
         db.session.commit()
 
-        if user.username != "admin":
-            logged_user = CurrentUser.query.first()
-            if logged_user is not None:
-                db.session.delete(logged_user)
-                db.session.commit()
         return jsonify({"msg":"User deleted successfully"}),200
     
     except Exception as e:

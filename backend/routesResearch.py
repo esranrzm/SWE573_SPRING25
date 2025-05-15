@@ -1,6 +1,6 @@
 from app import app, db
 from flask import request, jsonify, session
-from models import Research, User, Comment, CurrentUser
+from models import Research, User, Comment, Node
 from flask_bcrypt import Bcrypt
 from flask_session import Session
 from datetime import datetime
@@ -22,6 +22,27 @@ def get_current_research(id):
     
     research = Research.query.filter_by(id=id).first()
 
+    research_comments = Comment.query.filter_by(research_id=id).all()
+    research_nodes = Node.query.filter_by(research_id=id).all()
+
+    research_comment_users = set()
+    research_node_users = set()
+    if research_comments:
+        research_comment_users = {user.author_id for user in research_comments}
+    if research_nodes:
+        research_node_users = {user.user_id for user in research_nodes}
+    
+    unique_users = []
+    for comment_user in research_comment_users:
+        if comment_user not in unique_users:
+            unique_users.append(comment_user)
+
+    for node_user in research_node_users:
+        if node_user not in unique_users:
+            unique_users.append(node_user)
+
+    print(len(unique_users))
+
     return jsonify({
         "id": research.id,
         "authorId": research.author_id,
@@ -29,7 +50,8 @@ def get_current_research(id):
         "title": research.title,
         "description": research.description,
         "tags": research.tags,
-        "createdAt": research.created_at
+        "createdAt": research.created_at,
+        "researchCollaboratorCount": len(unique_users)
     }), 200
 
 
@@ -50,28 +72,24 @@ def get_current_user_research(id):
 @app.route("/api/researches/create", methods=["POST"])
 def create_research():
     try:
-        author= CurrentUser.query.first() #session.get("user_id")
-        #print(author_id)
-        if author:
-            user = User.query.filter_by(id=author.user_id).first()
-            if user:
-                username=user.username
-            else:
-                return jsonify({"error": "No user found. Check the DB."}), 404
-        else:
-            return jsonify({"error": "No logged in user found. Unauthorized..."}), 401
-
         data=request.json
-        authorName = username
         title = data.get("title")
         description = data.get("description")
+        userId = data.get("userId")
         tags = data.get("tags")
+
+        author = User.query.filter_by(id=userId).first()
+        if author:
+            username=author.username
+        else:
+            return jsonify({"error": "No user found. Check the DB."}), 404
+
+        authorName = username
         createdAt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
         new_research = Research(
-            #session.get("user_id"),
-                            author_id=author.user_id,
+                            author_id=userId,
                             author_name=authorName,
                             title=title,
                             description=description,
