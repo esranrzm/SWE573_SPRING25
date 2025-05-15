@@ -734,7 +734,7 @@ function GraphPage() {
                                       No data available.
                                     </Text>
                                   )
-                                )}  
+                                )}    
                               </Field.Root>
                           </Dialog.Body>
                           <Dialog.Footer>

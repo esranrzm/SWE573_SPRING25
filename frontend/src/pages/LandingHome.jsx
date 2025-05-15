@@ -8,7 +8,7 @@ import ConfigHelper from "@/components/configHelper";
 function LandingHome(){
 
     const [user, setUser] = useState(null);
-    const setUrlPrefix = ConfigHelper.setItem("url",'http://localhost:5000'); //https://swe573-spring25-backend.onrender.com
+    const setUrlPrefix = ConfigHelper.setItem("url",'https://swe573-spring25-backend.onrender.com'); //https://swe573-spring25-backend.onrender.com
     const getUrlPrefix = ConfigHelper.getItem("url");
     const uid = ConfigHelper.getItem("userId");
     const navigate = useNavigate();
