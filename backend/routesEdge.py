@@ -1,10 +1,9 @@
 from app import app, db
 from flask import request, jsonify
-from models import Node, Edge
+from models import Edge
 from flask_bcrypt import Bcrypt
 from flask_session import Session
 from datetime import datetime
-import requests
 from sqlalchemy import and_
 
 bcrypt = Bcrypt(app)

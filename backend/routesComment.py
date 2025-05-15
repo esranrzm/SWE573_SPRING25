@@ -1,6 +1,6 @@
 from app import app, db
 from flask import request, jsonify, session
-from models import Research, User, Comment, CurrentUser
+from models import Research, User, Comment, Node
 from flask_bcrypt import Bcrypt
 from flask_session import Session
 from datetime import datetime
@@ -41,6 +41,27 @@ def get_current_research_comments(id):
 
         if not research_comments:
             return jsonify({"error": "No comments found for this research"}), 404
+        
+
+        research_nodes = Node.query.filter_by(research_id=id).all()
+
+        research_comment_users = set()
+        research_node_users = set()
+        if research_comments:
+            research_comment_users = {user.author_id for user in research_comments}
+        if research_nodes:
+            research_node_users = {user.user_id for user in research_nodes}
+        
+        unique_users = []
+        for comment_user in research_comment_users:
+            if comment_user not in unique_users:
+                unique_users.append(comment_user)
+
+        for node_user in research_node_users:
+            if node_user not in unique_users:
+                unique_users.append(node_user)
+
+        print(len(unique_users))
 
         comments_list = []
         for comment in research_comments:
@@ -50,7 +71,8 @@ def get_current_research_comments(id):
                 "author_name": comment.author_name,
                 "research_id": comment.research_id,
                 "comment": comment.comment,
-                "created_at": comment.created_at
+                "created_at": comment.created_at,
+                "researchCollaboratorCount": len(unique_users)
             }
             comments_list.append(current_comment)
         
@@ -106,26 +128,23 @@ def get_current_user_comments(id):
 @app.route("/api/comments/create", methods=["POST"])
 def create_comment():
     try:
-        author= CurrentUser.query.first() #session.get("user_id")
-        if author:
-            user = User.query.filter_by(id=author.user_id).first()
-            if user:
-                username=user.username
-            else:
-                return jsonify({"error": "No user found. Check the DB."}), 404
-        else:
-            return jsonify({"error": "No logged in user found. Unauthorized..."}), 401
-
         data=request.json
-        authorName = username
         researchId = data.get("researchId")
+        userId = data.get("userId")
         comment = data.get("comment")
+        
+        author = User.query.filter_by(id=userId).first()
+        if author:
+            username=author.username
+        else:
+            return jsonify({"error": "No user found. Check the DB."}), 404
+        
+        authorName = username
         createdAt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
         new_comment = Comment(
-            #session.get("user_id"),
-                            author_id=author.user_id, 
+                            author_id=userId, 
                             author_name=authorName,
                             research_id=researchId,
                             comment=comment,

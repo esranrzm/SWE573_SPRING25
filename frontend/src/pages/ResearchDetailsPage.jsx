@@ -21,15 +21,17 @@ const ResearchDetailsPage = () => {
     const [currentComment, setCurrentComment] = useState("");
     const [newComment, setNewComment] = useState("");
     const [clickedComment, setClickedComment] = useState("");
+    const [collaboratorCount, setCollaboratorCount] = useState("");
     const [resultCommentList, setResultCommentList] = useState([]);
     const LoggedUsername = ConfigHelper.getItem('username');
     const getUrlPrefix = ConfigHelper.getItem("url");
+    const uid = ConfigHelper.getItem("userId");
     const navigate = useNavigate();
 
 
     const fetchUserId = async () => {
         try {
-            const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
+            const resp = await httpClient.get(`${getUrlPrefix}/api/users/getSearchedUser/${uid}`);
             setUserName(resp.data.username)
             setLoggedUserId(resp.data.id)
         
@@ -42,7 +44,7 @@ const ResearchDetailsPage = () => {
             if (e.response?.status === 401) {
                 navigate("/");
             } else {
-            alert("An error occurred. Please try again.");
+                alert("An error occurred. Please try again.");
             }
         }
         };
@@ -51,13 +53,14 @@ const ResearchDetailsPage = () => {
         try {
             const resp = await httpClient.get(`${getUrlPrefix}/api/researches/${researchId}`);
             if (resp.status === 200) {
-                setAuthorName(resp.data.authorName)
-                setAuthorId(resp.data.authorId)
-                setResearchTitle(resp.data.title)
-                setResearchDesc(resp.data.description)
+                setAuthorName(resp.data.authorName);
+                setAuthorId(resp.data.authorId);
+                setResearchTitle(resp.data.title);
+                setResearchDesc(resp.data.description);
+                console.log(resp.data.researchCollaboratorCount);
+                setCollaboratorCount(resp.data.researchCollaboratorCount);
                 if (resp.data.tags && resp.data.tags.length > 0) {
-                    const convertedTags = resp.data.tags.split(",").map(tag => tag.trim()).join(" ");
-                    setResearchTags(convertedTags);
+                    setResearchTags(resp.data.tags);
                 }
                 setResearchDate(resp.data.createdAt)
 
@@ -82,7 +85,7 @@ const ResearchDetailsPage = () => {
             const resp = await httpClient.get(`${getUrlPrefix}/api/comments/research/${researchId}`);
             if (resp.status === 200) {
                 setResultCommentList(resp.data);
-
+                setCollaboratorCount(resp.data[0].researchCollaboratorCount);
             }
             
             if (resp.status != 200 & resp.status != 404) {
@@ -95,6 +98,7 @@ const ResearchDetailsPage = () => {
                 navigate("/");
             } 
             else if (e.response?.status === 404) {
+                setResultCommentList([]);
                 //alert("There are no comments for this research");
             }
             else {
@@ -115,19 +119,17 @@ const ResearchDetailsPage = () => {
                 alert("Title and description cannot be empty.");
                 return;
             }
+            const tags = processTags(researchTags);
             const resp = await httpClient.put(`${getUrlPrefix}/api/researches/${researchId}`, {
                 "title": researchTitle,
                 "description": researchDescription,
-                "tags":processTags(researchTags)
+                "tags": tags
             });
 
             if (resp.status === 200) {
                 fetchResearchData();
                 alert("Research details updated successfully.");
-                if (resp.data.tags && resp.data.tags.length > 0) {
-                    const convertedTags = resp.data.tags.split(",").map(tag => tag.trim()).join(" ");
-                    setResearchTags(convertedTags);
-                }
+                setResearchTags(tags);
 
             }
             
@@ -224,6 +226,7 @@ const ResearchDetailsPage = () => {
 
             if (resp.status === 200) {
                 alert("Comment deleted successfully.");
+                setCurrentComment("");
                 fecthResearchComments();
             }
             
@@ -249,6 +252,7 @@ const ResearchDetailsPage = () => {
             else {
                 const resp = await httpClient.post(`${getUrlPrefix}/api/comments/create`, {
                     "researchId": researchId,
+                    "userId": loggedUserId,
                     "comment": newComment
                 }) ;
     
@@ -322,6 +326,9 @@ const ResearchDetailsPage = () => {
                                     Go to Research Connection Graph
                             </Button>
                             <Flex direction="column" pt="50px" justifyContent="space-between" wrap="nowrap" width="100%">
+                                <Text fontSize="md" fontWeight="bold"  pb="8">
+                                    👩👨 Number of Collaborator is {collaboratorCount}
+                                </Text>
                                 <Text fontSize="xl" fontWeight="bold" textDecoration="underline" pb="2">
                                     Topic Tags
                                 </Text>
@@ -398,7 +405,7 @@ const ResearchDetailsPage = () => {
                                                                                         </Field.Root>
                                                                                         <Field.Root required>
                                                                                             <Field.Label>Tags <Field.RequiredIndicator /></Field.Label>
-                                                                                            <Input value={researchTags} onChange={(e) => setResearchTags(e.target.value)} placeholder="Enter research topics..." />
+                                                                                            <Textarea value={researchTags} onChange={(e) => setResearchTags(e.target.value)} placeholder="Enter research topics..." />
                                                                                             <Field.HelperText fontSize="2xs">You can add as many tags as you want. You need to add '#' in front of each tag and separate them with ','. Also, you should not use space characters in your tags. Tags that do not satisfy these requirements will not be added to the tag list.</Field.HelperText>
                                                                                             <Field.HelperText fontSize="2xs">e.g., #chatGPT, #GenerativeAI, #LLMSs, #bigData, #workingWithKubernetes</Field.HelperText>
                                                                                         </Field.Root>

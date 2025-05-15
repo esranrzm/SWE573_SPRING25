@@ -13,12 +13,12 @@ const SearchUserPage = () => {
     const [resultUserList, setResultUserList] = useState([]);
     const navigate = useNavigate();
     const getUrlPrefix = ConfigHelper.getItem("url");
+    const uid = ConfigHelper.getItem("userId");
 
     const fetchData = async () => {
         try {
-            const resp = await httpClient.get(`${getUrlPrefix}/api/users/@me`);
+            const resp = await httpClient.get(`${getUrlPrefix}/api/users/getSearchedUser/${uid}`);
             setUserId(resp.data.id);
-            console.log(loggedUserId);
             if (resp.status != 200) {
                 alert("An error occurred. Please try again.");
             }
@@ -28,7 +28,7 @@ const SearchUserPage = () => {
             if (e.response?.status === 401) {
               navigate("/");
             } else {
-            alert("An error occurred. Please try again.");
+              alert("An error occurred. Please try again.");
             }
         }
     };
