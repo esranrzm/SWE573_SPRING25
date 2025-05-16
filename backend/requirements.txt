@@ -9,3 +9,4 @@ pymysql
 pytest
 datetime
 requests
+cryptography
