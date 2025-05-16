@@ -9,4 +9,5 @@ pymysql
 pytest
 datetime
 requests
+mysqlclient
 cryptography
