@@ -2,12 +2,17 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source files
 COPY . .
 
-RUN npm install
+# Build the app
 RUN npm run build
 
-# Serve static files using a simple web server
+# Install serve to serve the build folder
 RUN npm install -g serve
 
 EXPOSE 3000
