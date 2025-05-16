@@ -20,9 +20,8 @@ services:
 
   backend:
     build: ./backend
-    environment:
-      - DB_URL=mysql+pymysql://root:1234@mysql:3307/courseproject
-      - SECRET_KEY=d583d2f630800dbdb56d9aee86fb7a
+    env_file:
+      - .env
     ports:
       - "5000:5000"
     depends_on:
